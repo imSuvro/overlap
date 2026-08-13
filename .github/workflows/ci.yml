@@ -6,6 +6,11 @@ on:
   push:
     branches: [main, develop]
 
+# CI only ever needs to read the code. Stating that explicitly means the default token cannot
+# write to the repository even if a dependency in the build tries to.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

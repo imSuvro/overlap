@@ -9,6 +9,10 @@ on:
     types: [completed]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  deployments: write
+
 concurrency:
   group: deploy-production
   cancel-in-progress: false
