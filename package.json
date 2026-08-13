@@ -13,7 +13,7 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || exit 0",
     "dev": "pnpm -r --parallel --if-present run dev",
-    "build": "pnpm -r --if-present run build",
+    "build": "pnpm --filter @overlap/web run build && pnpm --filter @overlap/edge run build",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

@@ -1,0 +1,170 @@
+/*
+ * Overlap's design tokens.
+ *
+ * The palette is warm on purpose. This is a consumer product that people open from a group
+ * chat, and the default blue-grey of an internal tool reads as work. Paper-cream surfaces and
+ * a terracotta accent make a scheduling grid feel like something you fill in rather than
+ * something you file.
+ *
+ * The heat ramp is a single warm hue climbing in lightness and saturation, so the strongest
+ * overlap is the most visually dominant thing on the page — which is the one thing the whole
+ * product exists to show. A multi-hue ramp would look livelier and rank worse.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --paper: #fbf7f1;
+  --surface: #ffffff;
+  --surface-sunken: #f4ede3;
+  --surface-raised: #ffffff;
+
+  /* Ink */
+  --ink: #2c2621;
+  --ink-soft: #6b6058;
+  --ink-faint: #9a8f85;
+  --ink-inverse: #fdfaf6;
+
+  /* Structure */
+  --line: #e6dcce;
+  --line-strong: #d3c4b0;
+
+  /* Accent */
+  --accent: #d9552e;
+  --accent-hover: #c04722;
+  --accent-soft: #fdeee7;
+  --accent-ink: #ffffff;
+
+  /* Availability heat ramp, 0 people -> everyone */
+  --heat-0: #f1e8db;
+  --heat-1: #fadfc0;
+  --heat-2: #f5be83;
+  --heat-3: #ec9550;
+  --heat-4: #db6b31;
+  --heat-5: #b8431c;
+
+  /* A time that does not exist in this timezone */
+  --void: #e9e0d2;
+  --void-stripe: #d8cbb8;
+
+  /* Feedback */
+  --positive: #2f7d5f;
+  --caution: #a9722a;
+  --danger: #b3392a;
+
+  /* Type */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+
+  /* Space — a 4px scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(44 38 33 / 6%), 0 1px 1px rgb(44 38 33 / 4%);
+  --shadow-md: 0 4px 12px rgb(44 38 33 / 8%), 0 1px 3px rgb(44 38 33 / 6%);
+  --shadow-lg: 0 12px 32px rgb(44 38 33 / 12%), 0 2px 8px rgb(44 38 33 / 6%);
+
+  --focus-ring: 0 0 0 3px var(--paper), 0 0 0 5px var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #171310;
+    --surface: #211c18;
+    --surface-sunken: #12100e;
+    --surface-raised: #292320;
+
+    --ink: #f2eae0;
+    --ink-soft: #b5a99c;
+    --ink-faint: #82766a;
+    --ink-inverse: #171310;
+
+    --line: #332c26;
+    --line-strong: #483e35;
+
+    --accent: #f0784e;
+    --accent-hover: #f68b64;
+    --accent-soft: #331e15;
+    --accent-ink: #1a1310;
+
+    /* Rebalanced rather than inverted: on a dark ground the ramp has to climb in luminance
+       from near-background to bright, or the busiest cells stop being the loudest. */
+    --heat-0: #241e1a;
+    --heat-1: #3d2a1e;
+    --heat-2: #5e3a22;
+    --heat-3: #8a4e26;
+    --heat-4: #bd672d;
+    --heat-5: #ee8b45;
+
+    --void: #1e1916;
+    --void-stripe: #2e2620;
+
+    --positive: #5cb894;
+    --caution: #d6a15e;
+    --danger: #e5705e;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
+    --shadow-lg: 0 12px 32px rgb(0 0 0 / 55%);
+  }
+}
+
+[data-theme='dark'] {
+  --paper: #171310;
+  --surface: #211c18;
+  --surface-sunken: #12100e;
+  --surface-raised: #292320;
+
+  --ink: #f2eae0;
+  --ink-soft: #b5a99c;
+  --ink-faint: #82766a;
+  --ink-inverse: #171310;
+
+  --line: #332c26;
+  --line-strong: #483e35;
+
+  --accent: #f0784e;
+  --accent-hover: #f68b64;
+  --accent-soft: #331e15;
+  --accent-ink: #1a1310;
+
+  --heat-0: #241e1a;
+  --heat-1: #3d2a1e;
+  --heat-2: #5e3a22;
+  --heat-3: #8a4e26;
+  --heat-4: #bd672d;
+  --heat-5: #ee8b45;
+
+  --void: #1e1916;
+  --void-stripe: #2e2620;
+
+  --positive: #5cb894;
+  --caution: #d6a15e;
+  --danger: #e5705e;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 55%);
+}

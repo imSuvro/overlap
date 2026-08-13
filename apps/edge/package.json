@@ -1,0 +1,23 @@
+{
+  "name": "@overlap/edge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker + per-room Durable Object. Serves the SPA and terminates room WebSockets.",
+  "scripts": {
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@overlap/crdt": "workspace:*",
+    "@overlap/protocol": "workspace:*",
+    "@overlap/room-core": "workspace:*",
+    "@overlap/time": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "wrangler": "^4.123.0"
+  }
+}
