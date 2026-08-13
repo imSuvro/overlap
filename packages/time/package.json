@@ -1,0 +1,14 @@
+{
+  "name": "@overlap/time",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Zero-dependency IANA timezone kernel: offsets, wall-time resolution, slot generation, viewer-local formatting.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
