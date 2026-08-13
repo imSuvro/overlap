@@ -61,6 +61,30 @@ importers:
 
   packages/crdt: {}
 
+  packages/protocol:
+    dependencies:
+      '@overlap/crdt':
+        specifier: workspace:*
+        version: link:../crdt
+      '@overlap/time':
+        specifier: workspace:*
+        version: link:../time
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+
+  packages/room-core:
+    dependencies:
+      '@overlap/crdt':
+        specifier: workspace:*
+        version: link:../crdt
+      '@overlap/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@overlap/time':
+        specifier: workspace:*
+        version: link:../time
+
   packages/time: {}
 
 packages:
@@ -2921,6 +2945,12 @@ packages:
       }
     engines: { node: '>=12.20' }
 
+  zod@3.25.76:
+    resolution:
+      {
+        integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==,
+      }
+
 snapshots:
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -4542,3 +4572,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.2.2: {}
+
+  zod@3.25.76: {}
