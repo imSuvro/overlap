@@ -1,0 +1,24 @@
+name = "overlap"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# The SPA is served from Workers Static Assets: free and unmetered on both plans, and on the
+# same origin as the socket, so there is no CORS layer and only one thing to deploy.
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+# /r/:roomId is a client route, not a file. Without this it would 404 on a hard refresh.
+not_found_handling = "single-page-application"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "RoomDurableObject"
+
+[[migrations]]
+tag = "v1"
+# `new_sqlite_classes` rather than `new_classes`: SQLite-backed Durable Objects are the ones
+# available on the Workers free plan, and they are what makes this deployable at zero cost.
+new_sqlite_classes = ["RoomDurableObject"]
+
+[observability]
+enabled = true

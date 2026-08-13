@@ -73,6 +73,14 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node } },
   },
 
+  // The service worker runs in neither Node nor a window: `self`, `caches` and `clients` are
+  // its own globals.
+  {
+    files: ['apps/web/public/sw.js'],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
+
   // Browser code
   {
     files: ['apps/web/**/*.{ts,tsx}'],
