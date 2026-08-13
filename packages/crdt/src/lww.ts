@@ -15,9 +15,16 @@ import { compareHlc, hlcEquals, type Hlc } from './hlc.js';
 function canonicalCompare<T>(a: T, b: T): number {
   if (Object.is(a, b)) return 0;
   if (typeof a === 'number' && typeof b === 'number') return a - b;
-  const left = typeof a === 'string' ? a : (JSON.stringify(a) ?? 'undefined');
-  const right = typeof b === 'string' ? b : (JSON.stringify(b) ?? 'undefined');
+  const left = typeof a === 'string' ? a : stringifyForOrdering(a);
+  const right = typeof b === 'string' ? b : stringifyForOrdering(b);
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function stringifyForOrdering(value: unknown): string {
+  // `JSON.stringify` is declared as returning `string`, but genuinely returns `undefined` for
+  // `undefined`, functions, and symbols. The cast makes that real behaviour visible rather
+  // than letting the declaration hide a crash.
+  return (JSON.stringify(value) as string | undefined) ?? 'undefined';
 }
 
 /** A value together with the stamp that last wrote it. */
