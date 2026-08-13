@@ -654,10 +654,16 @@ function cellDomId(column: number, row: number): string {
   return `cell-${String(column)}-${String(row)}`;
 }
 
+/**
+ * Moves focus synchronously.
+ *
+ * Deferring to an animation frame loses races against fast key repeat: an Arrow followed
+ * immediately by Space would land on the cell focus had not left yet, toggling it back off
+ * instead of painting the next one. Every cell is always in the DOM, so there is nothing to
+ * wait for.
+ */
 function focusCell(address: CellAddress): void {
-  requestAnimationFrame(() => {
-    document.getElementById(cellDomId(address.column, address.row))?.focus();
-  });
+  document.getElementById(cellDomId(address.column, address.row))?.focus();
 }
 
 function clamp(value: number, min: number, max: number): number {

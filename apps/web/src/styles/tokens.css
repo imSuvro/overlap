@@ -23,18 +23,24 @@
   /* Ink */
   --ink: #2c2621;
   --ink-soft: #6b6058;
-  --ink-faint: #9a8f85;
+  /* 5.6:1 on white and 5.3:1 on paper. The obvious warmer grey for "quiet" text lands at
+     3.2:1, which is below the AA floor for the small sizes it gets used at. */
+  --ink-faint: #6f665c;
   --ink-inverse: #fdfaf6;
 
   /* Structure */
   --line: #e6dcce;
   --line-strong: #d3c4b0;
 
-  /* Accent */
-  --accent: #d9552e;
-  --accent-hover: #c04722;
+  /* Accent — deep enough that white sits on it at 4.7:1. The brighter terracotta this
+     started as looked better and failed AA on every primary button. */
+  --accent: #c94a24;
+  --accent-hover: #ad3d1b;
   --accent-soft: #fdeee7;
   --accent-ink: #ffffff;
+  /* The accent is a fill colour, not a text colour: on the soft accent tint it manages only
+     3.5:1. This darker step is what accent-coloured *text* uses. */
+  --accent-strong: #a93a15;
 
   /* Availability heat ramp, 0 people -> everyone */
   --heat-0: #f1e8db;
@@ -139,7 +145,7 @@
 
   --ink: #f2eae0;
   --ink-soft: #b5a99c;
-  --ink-faint: #82766a;
+  --ink-faint: #9c9086;
   --ink-inverse: #171310;
 
   --line: #332c26;
@@ -149,6 +155,7 @@
   --accent-hover: #f68b64;
   --accent-soft: #331e15;
   --accent-ink: #1a1310;
+  --accent-strong: #f89066;
 
   --heat-0: #241e1a;
   --heat-1: #3d2a1e;

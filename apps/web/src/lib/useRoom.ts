@@ -125,12 +125,18 @@ export function useRoom(roomId: string): RoomSession {
         onPresenceChange: (next) => {
           setPeers(next);
         },
-        onChange: bumpCommit,
-        onSnapshot: (snapshot) => {
+        onChange: () => {
+          bumpCommit();
+
+          // Driven off every change, local or remote, so painting with no network still
+          // reaches the disk. Building a snapshot is O(entries), so it is done once when the
+          // writes settle rather than on each painted cell.
           if (snapshotTimerRef.current !== null) window.clearTimeout(snapshotTimerRef.current);
           snapshotTimerRef.current = window.setTimeout(() => {
-            const current = created?.config;
-            if (current) void saveCachedRoom(roomId, current, snapshot);
+            const roomConfig = created?.config ?? cached?.config;
+            if (created && roomConfig) {
+              void saveCachedRoom(roomId, roomConfig, created.state.toSnapshot());
+            }
           }, SNAPSHOT_DEBOUNCE_MS);
         },
         onOutboxChange: (ops) => {
@@ -184,10 +190,16 @@ export function useRoom(roomId: string): RoomSession {
     const onVisibility = (): void => {
       if (document.visibilityState === 'visible') wake();
     };
+    const onOffline = (): void => {
+      client.notifyNetworkLost();
+    };
+
     window.addEventListener('online', wake);
+    window.addEventListener('offline', onOffline);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('online', wake);
+      window.removeEventListener('offline', onOffline);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [client]);

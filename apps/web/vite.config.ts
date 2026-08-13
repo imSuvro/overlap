@@ -7,6 +7,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Pinned to IPv4 so the dev server, the Playwright base URL, and the proxy target all
+    // agree on one host. Left as `localhost` it resolves to ::1 on some machines and 127.0.0.1
+    // on others, which shows up as an intermittent connection refused rather than as a
+    // configuration problem.
+    host: '127.0.0.1',
     // Proxied rather than pointed at an absolute URL, so the client uses same-origin relative
     // paths in development exactly as it does in production behind the Worker. One code path,
     // no environment-specific base URL to get wrong.

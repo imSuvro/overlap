@@ -13,3 +13,16 @@ createRoot(container).render(
     <App />
   </StrictMode>,
 );
+
+/*
+ * Production only. In development the worker would sit between Vite and the browser and serve
+ * stale modules straight through hot reloads, which costs more than the offline reload it buys
+ * while developing.
+ */
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Offline reload is an enhancement; the app is fully usable without it.
+    });
+  });
+}
