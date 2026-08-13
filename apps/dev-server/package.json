@@ -1,0 +1,27 @@
+{
+  "name": "@overlap/dev-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node.js WebSocket server over the same room engine the edge runs. Powers local development and the multi-client integration suite.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@overlap/crdt": "workspace:*",
+    "@overlap/protocol": "workspace:*",
+    "@overlap/room-core": "workspace:*",
+    "@overlap/time": "workspace:*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2"
+  }
+}

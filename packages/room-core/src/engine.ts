@@ -23,9 +23,16 @@ export interface RejectedOp {
 }
 
 export interface ApplyResult {
+  /** Well-formed and incorporated, whether or not they won. */
   readonly accepted: Op[];
+  /**
+   * The subset that actually changed state — what peers need to hear about.
+   *
+   * Broadcasting the losers too would be *correct*, since merge is idempotent, but it would
+   * put the whole of a reconnecting client's replayed outbox back on everyone else's wire.
+   */
+  readonly effective: Op[];
   readonly rejected: RejectedOp[];
-  /** `false` when every op lost to something already stored, so there is nothing to broadcast. */
   readonly changed: boolean;
 }
 
@@ -86,8 +93,8 @@ export class RoomEngine {
    */
   apply(ops: readonly Op[], context: ApplyContext): ApplyResult {
     const accepted: Op[] = [];
+    const effective: Op[] = [];
     const rejected: RejectedOp[] = [];
-    let changed = false;
 
     for (const op of ops) {
       const reason = this.validate(op, context);
@@ -96,14 +103,15 @@ export class RoomEngine {
         continue;
       }
 
-      if (this.state.applyOp(op)) changed = true;
       // An op that lost to a newer write is still *accepted* — it was well-formed and has been
       // incorporated. Only the broadcast is skipped.
+      if (this.state.applyOp(op)) effective.push(op);
       accepted.push(op);
     }
 
+    const changed = effective.length > 0;
     if (changed) this.lastWriteAt = context.now;
-    return { accepted, rejected, changed };
+    return { accepted, effective, rejected, changed };
   }
 
   private validate(op: Op, context: ApplyContext): string | null {

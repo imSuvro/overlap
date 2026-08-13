@@ -93,7 +93,6 @@ export const clientMessageSchema = z.discriminatedUnion('t', [
     t: z.literal('hello'),
     participantId: participantIdSchema,
     sessionId: sessionIdSchema,
-    since: hlcStringSchema.nullable(),
     ops: z.array(opSchema).max(MAX_OPS_PER_MESSAGE),
   }),
   z.object({
@@ -115,10 +114,28 @@ export const serverMessageSchema = z.discriminatedUnion('t', [
     config: roomConfigSchema,
     snapshot: roomSnapshotSchema,
     peers: z.array(presenceSchema),
+    /**
+     * The id this *connection* is known by, assigned by the server.
+     *
+     * Distinct from the `sessionId` the client uses as its HLC actor: that one has to exist
+     * before any socket does, because writes happen offline. This one identifies the peer in
+     * presence and `left` messages, and being server-assigned means a client cannot claim to
+     * be someone else's connection.
+     */
+    sessionId: sessionIdSchema,
     /** Lets the client measure its own clock skew against the room. */
     serverTime: z.number().int(),
   }),
   z.object({ t: z.literal('ops'), ops: z.array(opSchema) }),
+  /**
+   * Confirms the server holds these ops, identified by stamp, so the sender can drop them from
+   * its outbox.
+   *
+   * Without an acknowledgement the client would have to choose between clearing the outbox on
+   * send — losing writes whenever a socket dies mid-flight — and never clearing it at all.
+   * Merge is idempotent, so a redundant resend is free; a dropped write is not.
+   */
+  z.object({ t: z.literal('ack'), stamps: z.array(z.string().max(64)) }),
   z.object({ t: z.literal('presence'), presence: presenceSchema }),
   z.object({ t: z.literal('left'), sessionId: sessionIdSchema }),
   /**
