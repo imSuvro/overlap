@@ -1,0 +1,6 @@
+#!/bin/sh
+# Fast local gate. The authoritative gate is CI; this just catches the obvious things
+# before they cost a round-trip.
+set -e
+pnpm lint
+pnpm typecheck

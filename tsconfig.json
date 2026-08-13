@@ -1,0 +1,9 @@
+{
+  // Root-level TypeScript tooling files. Each package and app has its own tsconfig; this one
+  // exists so the config files are type-checked and lintable rather than silently skipped.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "playwright.config.ts"]
+}

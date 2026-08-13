@@ -1,0 +1,11 @@
+#!/bin/sh
+# Enforce Conventional Commits locally. CI enforces the same rule over the whole PR range,
+# so a bypassed hook still fails the merge rather than slipping through.
+npx --no-install commitlint --edit "$1" || {
+  echo ""
+  echo "Commit message must follow Conventional Commits, e.g.:"
+  echo "  feat(crdt): add hybrid logical clock"
+  echo "  fix(web): stop drag painting skipping cells on fast flicks"
+  echo ""
+  exit 1
+}
