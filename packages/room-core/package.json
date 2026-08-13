@@ -1,0 +1,19 @@
+{
+  "name": "@overlap/room-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Transport-agnostic room engine. Applies ops, merges state, computes broadcasts. Runs identically on Node and on a Durable Object.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@overlap/crdt": "workspace:*",
+    "@overlap/protocol": "workspace:*",
+    "@overlap/time": "workspace:*"
+  }
+}
