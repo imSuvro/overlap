@@ -9,7 +9,11 @@ export interface RoomDraftInput {
   readonly slotMinutes: 15 | 30 | 60;
 }
 
-const API_ORIGIN = 'http://127.0.0.1:8787';
+/**
+ * The dev server is reached directly; a deployed origin serves the API from the same host as
+ * the app, so there is nothing separate to point at.
+ */
+const API_ORIGIN = process.env.OVERLAP_BASE_URL ?? 'http://127.0.0.1:8787';
 
 /**
  * Creates a room straight through the API.

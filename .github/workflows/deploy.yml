@@ -22,7 +22,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     environment:
       name: production
-      url: https://overlap.suvra.workers.dev
+      url: ${{ vars.PRODUCTION_URL || 'https://overlap.purple-larkspur.workers.dev' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -37,3 +37,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # The same end-to-end suite, run against the origin that was just deployed. A green
+      # build proves the artifact is sound; this proves the deployment is.
+      - name: Verify the deployment
+        run: pnpm exec playwright install --with-deps chromium && pnpm test:e2e
+        env:
+          OVERLAP_BASE_URL: ${{ vars.PRODUCTION_URL || 'https://overlap.purple-larkspur.workers.dev' }}

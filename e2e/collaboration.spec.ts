@@ -151,9 +151,13 @@ test.describe('several people in one room', () => {
             tx.oncomplete = () => {
               const room = roomRequest.result as
                 { snapshot: { availability: { entries: unknown[] } } } | undefined;
-              const outbox = outboxRequest.result as { ops: unknown[] } | undefined;
+              const outbox = outboxRequest.result as { ops: { k: string }[] } | undefined;
               resolve({
-                outbox: outbox?.ops.length ?? 0,
+                // Counting availability ops specifically. The outbox may also still hold the
+                // name op if its acknowledgement had not landed before the network was cut —
+                // which is precisely the race this whole mechanism exists to survive, so it
+                // must not be able to fail the test.
+                outbox: (outbox?.ops ?? []).filter((op) => op.k === 'a').length,
                 availability: room?.snapshot.availability.entries.length ?? 0,
               });
             };
@@ -162,7 +166,7 @@ test.describe('several people in one room', () => {
       roomId,
     );
 
-    // Four painted cells, still queued because nothing could be sent.
+    // Four painted cells, still queued because there was nowhere to send them.
     expect(stored.outbox).toBe(4);
     expect(stored.availability).toBeGreaterThanOrEqual(4);
 
