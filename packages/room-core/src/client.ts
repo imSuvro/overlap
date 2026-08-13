@@ -42,7 +42,6 @@ export interface RoomClientOptions {
   readonly onPresenceChange?: (peers: readonly Presence[]) => void;
   readonly onRejected?: (reason: string, ops: readonly Op[]) => void;
   readonly onOutboxChange?: (ops: readonly Op[]) => void;
-  readonly onSnapshot?: (snapshot: RoomSnapshot) => void;
 }
 
 /** Batching window for painted cells: long enough to coalesce a drag, short enough to feel live. */
@@ -108,6 +107,12 @@ export class RoomClient {
       ? RoomState.fromSnapshot(options.initialSnapshot)
       : new RoomState();
     this.outbox = [...(options.initialOutbox ?? [])];
+
+    // Replay the restored outbox into the local replica. These are this device's own writes,
+    // made before the last reload and never acknowledged — so nothing else will ever tell us
+    // about them. Offline in particular, the server can never echo them back, and without
+    // this the marks would simply be missing from the grid until connectivity returned.
+    for (const op of this.outbox) this.state.applyOp(op);
   }
 
   get status(): ConnectionStatus {
@@ -239,6 +244,22 @@ export class RoomClient {
     );
   }
 
+  /**
+   * Reacts to the browser reporting that the network has gone.
+   *
+   * A socket whose network vanished is not closed — it is *stuck*, and can stay that way for
+   * minutes until TCP gives up. Without this the badge would keep claiming "Live" while
+   * nothing was reaching anyone, which is precisely the moment a user needs to be told their
+   * changes are being kept locally.
+   */
+  notifyNetworkLost(): void {
+    if (this.transport === null) return;
+    const transport = this.transport;
+    this.transport = null;
+    transport.close();
+    this.handleClose();
+  }
+
   private handleClose(): void {
     this.transport = null;
     this.inFlight.clear();
@@ -246,6 +267,11 @@ export class RoomClient {
     this.options.onPresenceChange?.([]);
     this.setStatus('offline');
     if (this.stopped) return;
+
+    // The socket's own close event may arrive after a forced drop. Reconnection is already
+    // scheduled at that point, and scheduling a second one would leak the first timer and
+    // double the reconnect attempts.
+    if (this.reconnectHandle !== null) return;
 
     // Exponential backoff with jitter, so a server coming back up is not hit by every client in
     // the room at the same instant.
@@ -273,7 +299,6 @@ export class RoomClient {
         this.peers.clear();
         for (const presence of message.peers) this.peers.set(presence.sessionId, presence);
         this.options.onPresenceChange?.(this.presence);
-        this.options.onSnapshot?.(this.state.toSnapshot());
         this.options.onChange?.();
         break;
       }
@@ -284,7 +309,6 @@ export class RoomClient {
           if (this.state.applyOp(op)) changed = true;
         }
         if (changed) {
-          this.options.onSnapshot?.(this.state.toSnapshot());
           this.options.onChange?.();
         }
         break;
