@@ -35,7 +35,9 @@ describe('compareHlc — a total order', () => {
   it('is antisymmetric', () => {
     fc.assert(
       fc.property(arbStamp, arbStamp, (a, b) => {
-        expect(Math.sign(compareHlc(a, b))).toBe(-Math.sign(compareHlc(b, a)));
+        // Compared with `===` rather than `toBe`, because equal stamps give 0 on one side and
+        // -0 on the other, and `Object.is` distinguishes those.
+        expect(compareHlc(a, b) === -compareHlc(b, a)).toBe(true);
       }),
     );
   });
@@ -172,6 +174,20 @@ describe('HybridLogicalClock — clock skew', () => {
 
     hlc.observe({ wallMs: modestlyAhead, counter: 0, actorId: 'bob' });
     expect(hlc.peek().wallMs).toBe(modestlyAhead);
+  });
+
+  it('resets the counter once physical time overtakes both clocks', () => {
+    const clock = fakeClock();
+    const hlc = new HybridLogicalClock('alice', { now: clock.now });
+    hlc.tick();
+    hlc.tick(); // counter is now 1
+
+    clock.advance(5_000);
+    hlc.observe({ wallMs: 1_000_000, counter: 3, actorId: 'bob' });
+
+    // Real time has moved past everything logical, so the counter has nothing left to
+    // disambiguate and starts over.
+    expect(hlc.peek()).toEqual({ wallMs: 1_005_000, counter: 0, actorId: 'alice' });
   });
 
   it('does not move backwards when a peer is behind', () => {

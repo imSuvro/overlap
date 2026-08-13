@@ -270,6 +270,66 @@ describe('LwwMap — deltas and snapshots', () => {
   });
 });
 
+describe('LwwMap — reading', () => {
+  it('exposes keys, membership, and entries', () => {
+    const map = new LwwMap<number>();
+    map.apply('k1', 1, { wallMs: 10, counter: 0, actorId: 'alice' });
+    map.apply('k2', 2, { wallMs: 11, counter: 0, actorId: 'alice' });
+
+    expect([...map.keys()].sort()).toEqual(['k1', 'k2']);
+    expect(map.has('k1')).toBe(true);
+    expect(map.has('nope')).toBe(false);
+    expect(map.get('nope')).toBeUndefined();
+    expect(map.getRegister('nope')).toBeUndefined();
+    expect(map.size).toBe(2);
+    expect([...map.entries()]).toHaveLength(2);
+  });
+
+  it('accepts an already-formed register', () => {
+    const map = new LwwMap<number>();
+    expect(
+      map.applyRegister('k', { value: 5, stamp: { wallMs: 1, counter: 0, actorId: 'a' } }),
+    ).toBe(true);
+    expect(map.get('k')).toBe(5);
+  });
+});
+
+describe('LwwMap — the value tiebreak is total over every value type', () => {
+  // The tiebreak only runs on an exact stamp collision, but when it does it must be defined
+  // for whatever the register happens to hold — strings for names, numbers for levels, and
+  // `null` for a cleared setting.
+  const stamp: Hlc = { wallMs: 10, counter: 0, actorId: 'alice' };
+
+  function convergesFromBothDirections<T>(first: T, second: T): boolean {
+    const forwards = new LwwMap<T>();
+    forwards.apply('k', first, stamp);
+    forwards.apply('k', second, stamp);
+
+    const backwards = new LwwMap<T>();
+    backwards.apply('k', second, stamp);
+    backwards.apply('k', first, stamp);
+
+    return forwards.equals(backwards);
+  }
+
+  it('orders strings', () => {
+    expect(convergesFromBothDirections('alice', 'bob')).toBe(true);
+  });
+
+  it('orders nullable settings', () => {
+    expect(convergesFromBothDirections<string | number | null>(null, 42)).toBe(true);
+    expect(convergesFromBothDirections<string | number | null>(null, 'pinned')).toBe(true);
+  });
+
+  it('orders structured values', () => {
+    expect(convergesFromBothDirections({ a: 1 }, { a: 2 })).toBe(true);
+  });
+
+  it('treats booleans as ordered', () => {
+    expect(convergesFromBothDirections(true, false)).toBe(true);
+  });
+});
+
 describe('LwwMap — equality', () => {
   it('distinguishes maps that agree on values but disagree on who wrote them', () => {
     // Same visible state, different provenance. Treating these as equal would let a genuine

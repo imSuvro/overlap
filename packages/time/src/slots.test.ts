@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { materializeSlots, slotDurationMs, type RoomShape } from './slots.js';
+import { materializeSlots, slotDurationMs, slotInstants, type RoomShape } from './slots.js';
 
 function shape(overrides: Partial<RoomShape> = {}): RoomShape {
   return {
@@ -118,6 +118,23 @@ describe('room shape validation', () => {
       // Deliberately bypassing the type to prove the runtime guard is real, not decorative.
       materializeSlots({ ...shape(), slotMinutes: 7 } as unknown as RoomShape),
     ).toThrow(/Slot length/);
+  });
+});
+
+describe('slotInstants', () => {
+  it('returns just the instants, ascending', () => {
+    const instants = slotInstants(shape({ dates: ['2026-08-20'] }));
+    expect(instants).toHaveLength(16);
+    expect(instants[0]).toBe(Date.UTC(2026, 7, 20, 13, 0));
+    expect([...instants].sort((a, b) => a - b)).toEqual([...instants]);
+  });
+
+  it('includes both halves of a repeated hour', () => {
+    const instants = slotInstants(
+      shape({ dates: ['2026-11-01'], dayStartMinute: 0, dayEndMinute: 3 * 60 }),
+    );
+    expect(instants).toHaveLength(8); // 6 wall times plus the 2 that happen twice
+    expect(new Set(instants).size).toBe(instants.length);
   });
 });
 
