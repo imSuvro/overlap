@@ -39,6 +39,11 @@ git push origin v1.2.0
 
 Deployment to production runs from `main` only, and only after CI has passed there.
 
+`main` requires linear history, so the release PR is **rebase-merged** rather than merged with a
+merge commit. That gives `main` the real feature commits instead of one opaque squash, at the
+cost of rewriting their SHAs — so after tagging, open a sync PR from `main` back into `develop`
+before starting the next release, or the following release PR will show every commit twice.
+
 ## Commit messages
 
 [Conventional Commits](https://www.conventionalcommits.org/), enforced by commitlint both as a
