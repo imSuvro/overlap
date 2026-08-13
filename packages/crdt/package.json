@@ -1,0 +1,14 @@
+{
+  "name": "@overlap/crdt",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hybrid logical clock and last-writer-wins register map. The convergence engine shared by client and server.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

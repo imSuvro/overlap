@@ -13,7 +13,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['packages/*/src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/index.ts'],
+      // `index.ts` is re-exports and `types.ts` is type-only — both compile to nothing, so
+      // including them measures the bundler rather than the tests.
+      exclude: ['**/*.test.ts', '**/index.ts', '**/types.ts'],
       // Thresholds are scoped to the two zero-dependency packages where the logic is
       // subtle and small enough that high coverage is meaningful. See docs/TEST-STRATEGY.md
       // for why there is no single global number.
