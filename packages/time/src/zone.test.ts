@@ -5,6 +5,7 @@ import {
   getOffsetMs,
   isValidTimeZone,
   localDateAt,
+  localTimeZone,
   minuteOfDayAt,
   parseLocalDate,
   resolveWallTime,
@@ -236,6 +237,12 @@ describe('zone validation and offset labels', () => {
     expect(isValidTimeZone('UTC')).toBe(true);
     expect(isValidTimeZone('Mars/Olympus_Mons')).toBe(false);
     expect(isValidTimeZone('')).toBe(false);
+  });
+
+  it('reports a usable zone for the current runtime', () => {
+    const zone = localTimeZone();
+    expect(zone.length).toBeGreaterThan(0);
+    expect(isValidTimeZone(zone)).toBe(true);
   });
 
   it('formats offsets in the conventional form', () => {

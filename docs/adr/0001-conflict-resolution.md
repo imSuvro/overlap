@@ -34,7 +34,10 @@ Stamps are **Hybrid Logical Clocks** — `(wallMs, counter, actorId)` compared l
 - Receive: `wallMs = max(now, prevWallMs, incomingWallMs)`, counter advanced to preserve causality
 - Incoming wall times beyond a bounded skew ahead of local `now` are clamped
 
-`actorId` is the final tiebreaker, making the order **total**.
+`actorId` is the final tiebreaker, making the order **total**. Where two stamps are equal in all
+three fields — which a well-behaved client never produces, but an arbitrary browser could — the
+order falls through to the value itself, so even a forged duplicate cannot cause divergence.
+See [ADR-0007](./0007-identity-without-accounts.md).
 
 Implement it as a zero-dependency package (`@overlap/crdt`, ~250 lines) rather than adopting a
 CRDT library.
