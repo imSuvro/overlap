@@ -26,3 +26,4 @@ pnpm-debug.log*
 
 # Demo recording frames (the GIF is committed; the source frames are not)
 scripts/.frames/
+design/audit/wip/
