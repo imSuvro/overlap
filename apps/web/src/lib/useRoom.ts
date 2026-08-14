@@ -18,6 +18,13 @@ export interface RoomSession {
   readonly participantId: string;
   readonly myName: string;
   readonly pendingCount: number;
+  /**
+   * Whether this session has ever had a live socket.
+   *
+   * Status starts at `offline` because that is literally true before the first connection, but
+   * "offline" is the wrong thing to *tell* someone who has simply not connected yet.
+   */
+  readonly everConnected: boolean;
   readonly notice: string | null;
   readonly loading: boolean;
   /** The API answered 404. The room is definitely not there. */
@@ -61,6 +68,7 @@ export function useRoom(roomId: string): RoomSession {
   const [peers, setPeers] = useState<readonly Presence[]>([]);
   const [commitVersion, setCommitVersion] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+  const [everConnected, setEverConnected] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
@@ -143,6 +151,7 @@ export function useRoom(roomId: string): RoomSession {
           return;
         }
       }
+      if (isDisposed()) return;
 
       const roomClient = new RoomClient({
         participantId: identity.participantId,
@@ -174,7 +183,10 @@ export function useRoom(roomId: string): RoomSession {
         },
         onStatusChange: (next) => {
           setStatus(next);
-          if (next === 'live') setMissing(false);
+          if (next === 'live') {
+            setMissing(false);
+            setEverConnected(true);
+          }
         },
         onPresenceChange: (next) => {
           setPeers(next);
@@ -357,6 +369,7 @@ export function useRoom(roomId: string): RoomSession {
     participantId: identity.participantId,
     myName: myName === '' ? identity.name : myName,
     pendingCount,
+    everConnected,
     notice,
     loading,
     missing,

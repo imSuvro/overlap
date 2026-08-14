@@ -166,7 +166,11 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
       </header>
 
       <main className="room__body">
-        <OfflineNotice status={room.status} pendingCount={room.pendingCount} />
+        <OfflineNotice
+          status={room.status}
+          pendingCount={room.pendingCount}
+          everConnected={room.everConnected}
+        />
 
         {finalizedInstant !== null && (
           <div className="finalized">
@@ -193,21 +197,6 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
               </button>
             </div>
           </div>
-        )}
-
-        {alone && (
-          <section className="invite" aria-labelledby="invite-title">
-            <div className="invite__text">
-              <h2 className="invite__title" id="invite-title">
-                You&rsquo;re the only one here
-              </h2>
-              <p className="invite__body">
-                Send this link to everyone you&rsquo;re planning with. They can open it and start
-                marking times straight away — no account, no install.
-              </p>
-            </div>
-            <ShareButton url={shareUrl} variant="large" />
-          </section>
         )}
 
         <section className="grid-panel" id="availability-grid" aria-label="Your availability">
@@ -301,6 +290,27 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
         </section>
 
         <aside className="room__aside">
+          {/*
+            The invitation lives in the side rail, not above the grid.
+
+            Above the grid it disappeared the instant a second person joined — a remote event —
+            and took ~100px of page with it, so the grid jumped under the hand of anyone
+            mid-drag. A layout shift the user did not cause is a defect on its own; that it also
+            silently dropped painted cells is what made it obvious.
+          */}
+          {alone && (
+            <section className="invite" aria-labelledby="invite-title">
+              <h2 className="invite__title" id="invite-title">
+                You&rsquo;re the only one here
+              </h2>
+              <p className="invite__body">
+                Send this link to everyone you&rsquo;re planning with. They can open it and start
+                marking times straight away — no account, no install.
+              </p>
+              <ShareButton url={shareUrl} variant="large" />
+            </section>
+          )}
+
           <BestWindows
             state={room.state}
             slots={slots}

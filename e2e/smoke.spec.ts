@@ -106,6 +106,38 @@ test.describe('every route loads clean', () => {
     expect(noise, 'console output in a room').toEqual([]);
   });
 
+  /*
+   * The grid must not move once it is on screen.
+   *
+   * This is a regression guard with a story: an offline banner and an invitation panel both sat
+   * above the grid and both appeared or vanished on events the user had not caused — the socket
+   * coming up, a second person joining. Each shifted the grid by roughly two rows, so a drag in
+   * progress finished somewhere other than where it started and silently painted the wrong
+   * cells. It reads as flakiness; it is a real defect with a real victim.
+   */
+  test('the grid does not move under the user', async ({ page, request, browser }) => {
+    const roomId = await createRoomViaApi(request, ordinaryRoom());
+    await joinRoom(page, roomId, 'Priya');
+
+    const grid = page.locator('.grid-stage');
+    const before = await grid.boundingBox();
+    expect(before).not.toBeNull();
+
+    // Someone else arrives and marks availability — the exact remote event that used to remove
+    // the invitation panel and drag the grid up with it.
+    const context = await browser.newContext();
+    const other = await context.newPage();
+    await joinRoom(other, roomId, 'Marcus');
+    await expect(page.locator('#participants-title')).toContainText('In this room (2)');
+    await page.waitForTimeout(500);
+
+    const after = await grid.boundingBox();
+    expect(after?.y, 'the grid moved vertically after a remote join').toBe(before?.y);
+    expect(after?.x, 'the grid moved horizontally after a remote join').toBe(before?.x);
+
+    await context.close();
+  });
+
   test('a room that is gone', async ({ page }) => {
     const { noise, probes } = watch(page);
 
