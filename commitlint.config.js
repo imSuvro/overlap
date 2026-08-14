@@ -17,6 +17,9 @@ export default {
         'ci',
         'docs',
         'repo',
+        // The `design/` directory: the audit, the locked contract, the screenshot harness and
+        // the before/after evidence. Distinct from `web`, which is the code they govern.
+        'design',
       ],
     ],
     'header-max-length': [2, 'always', 100],
