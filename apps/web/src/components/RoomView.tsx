@@ -154,9 +154,7 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
               Rename
             </span>
           </div>
-          <span className="room__zone">
-            Your timezone · {viewerZone.replace(/_/g, ' ')}
-          </span>
+          <span className="room__zone">Your timezone · {viewerZone.replace(/_/g, ' ')}</span>
         </div>
 
         <div className="room__actions">
