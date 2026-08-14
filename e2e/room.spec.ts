@@ -109,10 +109,13 @@ test.describe('creating and using a room', () => {
     const roomId = await createRoomViaApi(request, ordinaryRoom());
     await joinRoom(page, roomId, 'Priya');
 
-    await expect(page.locator('.panel__empty')).toContainText('No overlap yet');
+    await expect(page.locator('.panel__empty')).toContainText('Nothing lines up yet');
 
     await dragPaint(page, 0, 3);
-    await expect(page.locator('.window-card').first()).toContainText('Everyone can make it');
+    const top = page.locator('.window-card').first();
+    await expect(top).toContainText('Everyone can make it');
+    // The ranking is stated, not merely implied by a tint: one recommendation, then runners-up.
+    await expect(top.locator('.window-card__rank')).toHaveText('Best match');
   });
 
   test('the host can pin a time and everyone sees it', async ({ page, request }) => {
@@ -123,7 +126,7 @@ test.describe('creating and using a room', () => {
     await page.getByRole('button', { name: 'Pin this time' }).first().click();
 
     await expect(page.locator('.finalized')).toBeVisible();
-    await expect(page.locator('.finalized__label')).toContainText('Pinned');
+    await expect(page.locator('.finalized__label')).toContainText('Everyone');
   });
 
   test('renaming the room persists', async ({ page, request }) => {
@@ -140,9 +143,23 @@ test.describe('creating and using a room', () => {
 
   test('an unknown room says so rather than hanging', async ({ page }) => {
     await page.goto('/r/aaaaaaaaaaaaaaaaaaaaaa');
-    // Matched loosely because the copy uses a typographic apostrophe.
-    await expect(page.getByRole('heading', { name: /This room isn.t here/ })).toBeVisible({
+    await expect(page.getByRole('heading', { name: /This room is gone/ })).toBeVisible({
       timeout: 20_000,
     });
+    await expect(page.getByRole('link', { name: 'Start a new room' })).toBeVisible();
+  });
+
+  /*
+   * A well-formed id that does not exist and a malformed id are different failures and get
+   * different screens. The second used to render the landing page in silence, so someone
+   * following a link truncated by a chat app believed they were in their group's room and
+   * started building a second one.
+   */
+  test('a link cut short says the link is the problem', async ({ page }) => {
+    await page.goto('/r/notavalidroomid');
+    await expect(page.getByRole('heading', { name: /This link is incomplete/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Start a new room' })).toBeVisible();
+    // The distinguishing assertion: it must not quietly become the create-a-room page.
+    await expect(page.locator('#room-title-input')).toHaveCount(0);
   });
 });

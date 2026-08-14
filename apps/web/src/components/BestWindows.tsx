@@ -60,17 +60,28 @@ export function BestWindows(props: BestWindowsProps): React.JSX.Element {
       </h2>
 
       {windows.length === 0 ? (
-        <p className="panel__empty">No overlap yet. Paint some availability to get started.</p>
+        <p className="panel__empty">
+          Nothing lines up yet. As people mark when they&rsquo;re free, the times that suit
+          everyone appear here.
+        </p>
       ) : (
         <ol className="window-list">
           {windows.map((window, index) => {
             const isFinalized = props.finalizedInstant === window.startInstant;
+            const isTop = index === 0;
             return (
               <li
                 key={window.startInstant}
-                className={`window-card${index === 0 ? ' window-card--top' : ''}`}
+                className={`window-card${isTop ? ' window-card--top' : ''}`}
               >
-                <div className="window-card__when">
+                {/*
+                  One recommendation with runners-up, not three equal options. Three identical
+                  buttons made the choice look like a choice the user had to reason about; the
+                  ranking already exists, so it may as well be stated.
+                */}
+                {isTop && <span className="window-card__rank">Best match</span>}
+
+                <div className="window-card__when tabular">
                   {formatFullDate(window.startInstant, viewerZone)}
                   <br />
                   {formatTimeOfDay(window.startInstant, viewerZone)} –{' '}
@@ -96,8 +107,7 @@ export function BestWindows(props: BestWindowsProps): React.JSX.Element {
                 <div className="window-card__actions">
                   <button
                     type="button"
-                    className="button button--secondary"
-                    style={{ padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-sm)' }}
+                    className={`button button--small${isTop && !isFinalized ? '' : ' button--secondary'}`}
                     onClick={() => {
                       props.onFinalize(isFinalized ? null : window.startInstant);
                     }}

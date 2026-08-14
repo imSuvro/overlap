@@ -66,12 +66,26 @@ export function socketUrl(roomId: string): string {
   return `${protocol}//${location.host}/api/rooms/${encodeURIComponent(roomId)}/socket`;
 }
 
-/** The room id in the current URL, or `null` on the landing page. */
-export function roomIdFromLocation(pathname = location.pathname): string | null {
+/**
+ * What the current URL is asking for.
+ *
+ * The third case is the one that matters. A room id that fails `roomIdSchema` used to be
+ * indistinguishable from no room id at all, so a link truncated on its way through a chat app
+ * silently rendered the landing page — and the person who followed it believed they were in
+ * their group's room and started building a second one. Naming the case is what lets the app
+ * say so.
+ */
+export type Route =
+  | { readonly kind: 'landing' }
+  | { readonly kind: 'room'; readonly roomId: string }
+  | { readonly kind: 'brokenLink' };
+
+export function routeFromLocation(pathname = location.pathname): Route {
   const match = /^\/r\/([^/]+)\/?$/.exec(pathname);
-  if (!match?.[1]) return null;
+  if (!match?.[1]) return { kind: 'landing' };
+
   const parsed = roomIdSchema.safeParse(match[1]);
-  return parsed.success ? parsed.data : null;
+  return parsed.success ? { kind: 'room', roomId: parsed.data } : { kind: 'brokenLink' };
 }
 
 export function roomPath(roomId: string): string {
