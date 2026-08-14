@@ -34,7 +34,7 @@ Signature: the ruled margin. Motion: ink settling — everything eases out, noth
 **Self-critique — rejected.** Two problems, and the second is fatal. First, "notebook UI" is a
 well-trodden skeuomorphic cliché; the moment it is recognised it reads as costume. Second and
 worse, a paper metaphor actively lies about the product. The whole reason Overlap exists is that
-it is *live* — other people's marks appear under your cursor while you work. Dressing that as a
+it is _live_ — other people's marks appear under your cursor while you work. Dressing that as a
 static book undersells the one thing no paper planner can do.
 
 ### B. "Density" — the data is the only thing with colour
@@ -62,7 +62,7 @@ legible without reading, because two people's 9am sit at different heights again
 of light.
 
 **Self-critique — rejected as a whole, one part promoted.** The concept is the most on-subject of
-the three: it makes the app's hardest-to-explain feature *visible*. But washing the grid
+the three: it makes the app's hardest-to-explain feature _visible_. But washing the grid
 background in a second colour system directly breaks the documented reason the heat ramp exists —
 a single hue climbing in lightness so the strongest overlap is the most dominant thing on the
 page. Two colour systems in one plane muddy each other and the ranking stops being readable.
@@ -78,14 +78,14 @@ signature element below.
 **Density**, with Daylight's insight relocated to the time gutter.
 
 **Signature element — the daylight rail.** A narrow vertical band running down the time gutter,
-shading from night through dawn to midday and back to dusk, drawn in the *viewer's* timezone.
+shading from night through dawn to midday and back to dusk, drawn in the _viewer's_ timezone.
 It is the one bold thing in the product. It earns its place three ways:
 
 1. You can feel what part of the day you are looking at before reading a single label.
 2. It makes the timezone promise visible. A viewer in Berlin and one in Chicago see the same
    room with their own daylight — the strongest possible argument that the app is not doing
    naive UTC arithmetic.
-3. It sits *outside* the grid plane, so it cannot compete with the heat ramp.
+3. It sits _outside_ the grid plane, so it cannot compete with the heat ramp.
 
 It is deliberately low-chroma. It whispers. Everything else in the interface is disciplined so
 this can be the thing people remember.
@@ -100,41 +100,41 @@ ramp rather than appearing fully formed.
 ## 3. Tokens
 
 Implemented as CSS custom properties in `apps/web/src/styles/tokens.css`. **No colour, size,
-radius, shadow or duration may appear anywhere else in the codebase.** Values marked *kept* were
-already in the system and survive review unchanged; values marked *new* are added by this pass;
-values marked *changed* are amendments with a stated reason.
+radius, shadow or duration may appear anywhere else in the codebase.** Values marked _kept_ were
+already in the system and survive review unchanged; values marked _new_ are added by this pass;
+values marked _changed_ are amendments with a stated reason.
 
 ### 3.1 Colour — light
 
-| Token | Value | | Role |
-|---|---|---|---|
-| `--paper` | `#fbf7f1` | kept | The page. Warm, never grey. |
-| `--surface` | `#ffffff` | kept | Cards, panels. |
-| `--surface-sunken` | `#f4ede3` | kept | Wells, inset areas, hover on quiet controls. |
-| `--surface-raised` | `#ffffff` | kept | Dialogs, popovers. |
-| `--ink` | `#2c2621` | kept | Body and headings. |
-| `--ink-soft` | `#6b6058` | kept | Secondary text. |
-| `--ink-faint` | `#6f665c` | kept | Tertiary. Already contrast-corrected; do not lighten. |
-| `--ink-inverse` | `#fdfaf6` | kept | Text on dark fills. |
-| `--line` | `#e6dcce` | kept | Hairlines, dividers. |
-| `--line-strong` | `#d3c4b0` | kept | Input borders, emphasis edges. |
-| `--accent` | `#c94a24` | kept | Primary fill. White sits on it at 4.7:1. |
-| `--accent-hover` | `#ad3d1b` | kept | |
-| `--accent-soft` | `#fdeee7` | kept | Tint backgrounds. |
-| `--accent-ink` | `#ffffff` | kept | Text on `--accent`. |
-| `--accent-strong` | `#a93a15` | kept | Accent-coloured **text**. Never use `--accent` for type. |
-| `--heat-0` … `--heat-5` | `#f1e8db` → `#b8431c` | kept | The ramp. Single hue climbing in lightness and saturation. |
-| `--void` / `--void-stripe` | `#e9e0d2` / `#d8cbb8` | kept | A wall-clock time that does not exist in this zone. |
-| `--positive` | `#2f7d5f` | kept | |
-| `--caution` | `#a9722a` | kept | |
-| `--danger` | `#b3392a` | kept | |
-| `--scrim` | `rgb(74 38 20 / 44%)` | **changed** | Was `rgb(24 19 16 / 45%)`, which composites over paper to a flat `#959188` — a dead grey that erased the palette behind every dialog (audit V1). Tinted toward clay so the world behind a modal stays warm. |
-| `--disabled-surface` | `#efe7dc` | **new** | A control that is waiting, not broken. Replaces `opacity: 0.5` (audit V4). |
-| `--disabled-ink` | `#9a8e81` | **new** | 4.6:1 on `--disabled-surface`. |
-| `--daylight-night` | `#a7a0b4` | **amended** | Signature rail, 20:00–05:00. |
-| `--daylight-dawn` | `#f3bd83` | **amended** | 05:00–08:00. |
-| `--daylight-noon` | `#ffdf9e` | **amended** | 08:00–17:00. Was `#fff6e0`, which is a near-white cream: on the white grid panel the rail vanished entirely for any room inside working hours — which is most rooms. The signature element cannot only appear for rooms that run overnight. |
-| `--daylight-dusk` | `#d59583` | **amended** | 17:00–20:00. |
+| Token                      | Value                 |             | Role                                                                                                                                                                                                                                        |
+| -------------------------- | --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--paper`                  | `#fbf7f1`             | kept        | The page. Warm, never grey.                                                                                                                                                                                                                 |
+| `--surface`                | `#ffffff`             | kept        | Cards, panels.                                                                                                                                                                                                                              |
+| `--surface-sunken`         | `#f4ede3`             | kept        | Wells, inset areas, hover on quiet controls.                                                                                                                                                                                                |
+| `--surface-raised`         | `#ffffff`             | kept        | Dialogs, popovers.                                                                                                                                                                                                                          |
+| `--ink`                    | `#2c2621`             | kept        | Body and headings.                                                                                                                                                                                                                          |
+| `--ink-soft`               | `#6b6058`             | kept        | Secondary text.                                                                                                                                                                                                                             |
+| `--ink-faint`              | `#6f665c`             | kept        | Tertiary. Already contrast-corrected; do not lighten.                                                                                                                                                                                       |
+| `--ink-inverse`            | `#fdfaf6`             | kept        | Text on dark fills.                                                                                                                                                                                                                         |
+| `--line`                   | `#e6dcce`             | kept        | Hairlines, dividers.                                                                                                                                                                                                                        |
+| `--line-strong`            | `#d3c4b0`             | kept        | Input borders, emphasis edges.                                                                                                                                                                                                              |
+| `--accent`                 | `#c94a24`             | kept        | Primary fill. White sits on it at 4.7:1.                                                                                                                                                                                                    |
+| `--accent-hover`           | `#ad3d1b`             | kept        |                                                                                                                                                                                                                                             |
+| `--accent-soft`            | `#fdeee7`             | kept        | Tint backgrounds.                                                                                                                                                                                                                           |
+| `--accent-ink`             | `#ffffff`             | kept        | Text on `--accent`.                                                                                                                                                                                                                         |
+| `--accent-strong`          | `#a93a15`             | kept        | Accent-coloured **text**. Never use `--accent` for type.                                                                                                                                                                                    |
+| `--heat-0` … `--heat-5`    | `#f1e8db` → `#b8431c` | kept        | The ramp. Single hue climbing in lightness and saturation.                                                                                                                                                                                  |
+| `--void` / `--void-stripe` | `#e9e0d2` / `#d8cbb8` | kept        | A wall-clock time that does not exist in this zone.                                                                                                                                                                                         |
+| `--positive`               | `#2f7d5f`             | kept        |                                                                                                                                                                                                                                             |
+| `--caution`                | `#a9722a`             | kept        |                                                                                                                                                                                                                                             |
+| `--danger`                 | `#b3392a`             | kept        |                                                                                                                                                                                                                                             |
+| `--scrim`                  | `rgb(74 38 20 / 44%)` | **changed** | Was `rgb(24 19 16 / 45%)`, which composites over paper to a flat `#959188` — a dead grey that erased the palette behind every dialog (audit V1). Tinted toward clay so the world behind a modal stays warm.                                 |
+| `--disabled-surface`       | `#efe7dc`             | **new**     | A control that is waiting, not broken. Replaces `opacity: 0.5` (audit V4).                                                                                                                                                                  |
+| `--disabled-ink`           | `#9a8e81`             | **new**     | 4.6:1 on `--disabled-surface`.                                                                                                                                                                                                              |
+| `--daylight-night`         | `#a7a0b4`             | **amended** | Signature rail, 20:00–05:00.                                                                                                                                                                                                                |
+| `--daylight-dawn`          | `#f3bd83`             | **amended** | 05:00–08:00.                                                                                                                                                                                                                                |
+| `--daylight-noon`          | `#ffdf9e`             | **amended** | 08:00–17:00. Was `#fff6e0`, which is a near-white cream: on the white grid panel the rail vanished entirely for any room inside working hours — which is most rooms. The signature element cannot only appear for rooms that run overnight. |
+| `--daylight-dusk`          | `#d59583`             | **amended** | 17:00–20:00.                                                                                                                                                                                                                                |
 
 ### 3.2 Colour — dark
 
@@ -142,15 +142,15 @@ Dark mode is a rebalance, not an inversion. The heat ramp climbs from near-backg
 so the busiest cells stay the loudest. All light-mode tokens are redefined; the ones that differ
 in kind:
 
-| Token | Value | |
-|---|---|---|
-| `--paper` / `--surface` / `--surface-sunken` / `--surface-raised` | `#171310` / `#211c18` / `#12100e` / `#292320` | kept |
-| `--ink` / `--ink-soft` / `--ink-faint` / `--ink-inverse` | `#f2eae0` / `#b5a99c` / `#9c9086` / `#171310` | kept |
-| `--accent` / `--accent-hover` / `--accent-soft` / `--accent-ink` / `--accent-strong` | `#f0784e` / `#f68b64` / `#331e15` / `#1a1310` / `#f89066` | kept |
-| `--heat-0` … `--heat-5` | `#241e1a` → `#ee8b45` | kept |
-| `--scrim` | `rgb(0 0 0 / 62%)` | **new** |
-| `--disabled-surface` / `--disabled-ink` | `#2b2521` / `#7d7268` | **new** |
-| `--daylight-night` / `--dawn` / `--noon` / `--dusk` | `#2a2733` / `#6b4a30` / `#8a7448` / `#55353a` | **new** |
+| Token                                                                                | Value                                                     |         |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------- | ------- |
+| `--paper` / `--surface` / `--surface-sunken` / `--surface-raised`                    | `#171310` / `#211c18` / `#12100e` / `#292320`             | kept    |
+| `--ink` / `--ink-soft` / `--ink-faint` / `--ink-inverse`                             | `#f2eae0` / `#b5a99c` / `#9c9086` / `#171310`             | kept    |
+| `--accent` / `--accent-hover` / `--accent-soft` / `--accent-ink` / `--accent-strong` | `#f0784e` / `#f68b64` / `#331e15` / `#1a1310` / `#f89066` | kept    |
+| `--heat-0` … `--heat-5`                                                              | `#241e1a` → `#ee8b45`                                     | kept    |
+| `--scrim`                                                                            | `rgb(0 0 0 / 62%)`                                        | **new** |
+| `--disabled-surface` / `--disabled-ink`                                              | `#2b2521` / `#7d7268`                                     | **new** |
+| `--daylight-night` / `--dawn` / `--noon` / `--dusk`                                  | `#2a2733` / `#6b4a30` / `#8a7448` / `#55353a`             | **new** |
 
 Both a `prefers-color-scheme` block and a `[data-theme='dark']` block define every one, so an
 explicit choice wins in both directions and no token has its only definition inside a media
@@ -166,23 +166,23 @@ therefore not present anywhere and does not need to be — there is no web font 
 ever added it must be self-hosted, preloaded, `display: swap`, and metric-matched with
 `size-adjust` so this property survives.
 
-| Token | Value | |
-|---|---|---|
-| `--font-display` | `ui-serif, Charter, 'Bitstream Charter', 'Iowan Old Style', Georgia, serif` | **changed** — narrowed from the old `--font-serif`. Charter first: it is present on both macOS and Windows and is far closer to Iowan than Georgia is, so the headline reads the same on both. Georgia stays as the floor. |
-| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif` | kept |
-| `--font-mono` | `ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace` | kept |
+| Token            | Value                                                                                              |                                                                                                                                                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--font-display` | `ui-serif, Charter, 'Bitstream Charter', 'Iowan Old Style', Georgia, serif`                        | **changed** — narrowed from the old `--font-serif`. Charter first: it is present on both macOS and Windows and is far closer to Iowan than Georgia is, so the headline reads the same on both. Georgia stays as the floor. |
+| `--font-sans`    | `ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif` | kept                                                                                                                                                                                                                       |
+| `--font-mono`    | `ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace`                              | kept                                                                                                                                                                                                                       |
 
 Scale — a modular ramp; `--text-hero` is the only fluid step:
 
-| Token | Size | Use |
-|---|---|---|
-| `--text-xs` | `0.75rem` | Eyebrows, chip labels, grid axis |
-| `--text-sm` | `0.875rem` | Secondary text, hints, metadata |
-| `--text-base` | `1rem` | Body, controls |
-| `--text-lg` | `1.125rem` | Lead paragraphs |
-| `--text-xl` | `1.375rem` | Card titles |
-| `--text-2xl` | `1.75rem` | Section headings |
-| `--text-3xl` | `2.5rem` | Page headings |
+| Token         | Size                                      | Use                                 |
+| ------------- | ----------------------------------------- | ----------------------------------- |
+| `--text-xs`   | `0.75rem`                                 | Eyebrows, chip labels, grid axis    |
+| `--text-sm`   | `0.875rem`                                | Secondary text, hints, metadata     |
+| `--text-base` | `1rem`                                    | Body, controls                      |
+| `--text-lg`   | `1.125rem`                                | Lead paragraphs                     |
+| `--text-xl`   | `1.375rem`                                | Card titles                         |
+| `--text-2xl`  | `1.75rem`                                 | Section headings                    |
+| `--text-3xl`  | `2.5rem`                                  | Page headings                       |
 | `--text-hero` | `clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem)` | **new** — the landing headline only |
 
 Weights `--weight-regular 400`, `--weight-medium 500`, `--weight-semibold 600`, `--weight-bold 700`.
@@ -203,24 +203,24 @@ Radius: `--radius-xs 4px` (**new**, chips and swatches), `--radius-sm 6px`, `--r
 
 Elevation is four named levels, not a free choice of shadow:
 
-| Token | Shadow | Use |
-|---|---|---|
-| `--elevation-flat` | `none` | Anything sitting directly on paper |
-| `--elevation-raised` | `--shadow-sm` | Cards, panels |
-| `--elevation-floating` | `--shadow-md` | Popovers, the share panel, toasts |
-| `--elevation-overlay` | `--shadow-lg` | Dialogs only |
+| Token                  | Shadow        | Use                                |
+| ---------------------- | ------------- | ---------------------------------- |
+| `--elevation-flat`     | `none`        | Anything sitting directly on paper |
+| `--elevation-raised`   | `--shadow-sm` | Cards, panels                      |
+| `--elevation-floating` | `--shadow-md` | Popovers, the share panel, toasts  |
+| `--elevation-overlay`  | `--shadow-lg` | Dialogs only                       |
 
 ### 3.5 Motion
 
-| Token | Value | Use |
-|---|---|---|
-| `--motion-instant` | `90ms` | Press feedback, hover |
-| `--motion-quick` | `160ms` | Colour and border transitions |
-| `--motion-settle` | `260ms` | Things entering or leaving |
-| `--motion-arrive` | `420ms` | The orchestrated moment only |
-| `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
-| `--ease-enter` | `cubic-bezier(0, 0, 0.2, 1)` | Appearing |
-| `--ease-exit` | `cubic-bezier(0.4, 0, 1, 1)` | Leaving |
+| Token              | Value                        | Use                           |
+| ------------------ | ---------------------------- | ----------------------------- |
+| `--motion-instant` | `90ms`                       | Press feedback, hover         |
+| `--motion-quick`   | `160ms`                      | Colour and border transitions |
+| `--motion-settle`  | `260ms`                      | Things entering or leaving    |
+| `--motion-arrive`  | `420ms`                      | The orchestrated moment only  |
+| `--ease-standard`  | `cubic-bezier(0.2, 0, 0, 1)` | Default                       |
+| `--ease-enter`     | `cubic-bezier(0, 0, 0.2, 1)` | Appearing                     |
+| `--ease-exit`      | `cubic-bezier(0.4, 0, 1, 1)` | Leaving                       |
 
 No spring, no overshoot, no `infinite` outside a loading indicator. Every one of these is
 neutralised under `prefers-reduced-motion: reduce`, which must remain a single global block —
@@ -249,7 +249,7 @@ Pill (`--radius-full`), `--weight-semibold`, `--text-base`, `--space-3` × `--sp
 - **Hover** darkens the fill by one step. **Active** is `translateY(1px)` — the only transform
   in the system.
 - **Disabled** is `--disabled-surface` / `--disabled-ink`, never opacity. A disabled control
-  should read as *waiting for you*, not as broken glass. `cursor: not-allowed`.
+  should read as _waiting for you_, not as broken glass. `cursor: not-allowed`.
 - **Loading** keeps the button's width, swaps the label for a label-plus-spinner, and sets
   `aria-busy`. It never collapses — a button that resizes mid-press moves the thing under the
   user's finger.
@@ -294,7 +294,7 @@ hold the only route to an action.
 
 ### The four states, on every data-bearing surface
 
-- **Empty** — invites the first action *in the place the action happens*, not in a caption
+- **Empty** — invites the first action _in the place the action happens_, not in a caption
   underneath it. An empty state that only explains is a failed empty state.
 - **Loading** — a skeleton in the shape of the content that is coming, so nothing jumps when it
   lands. `--surface-sunken` blocks, a slow sheen, `aria-busy` on the region.
@@ -311,19 +311,19 @@ Plain, warm, and unhurried. Write like a competent friend who has done this befo
 making a fuss about it. Second person. Active voice. Sentence case everywhere — including
 buttons, including headings.
 
-| Register | Rule |
-|---|---|
-| **Headings** | A statement, not a label. "Find a time that works for everyone", not "Room setup". |
-| **Body** | One idea per sentence. Explain the mechanic, never the implementation. The words "sync", "CRDT", "socket", "slot" and "session" never reach the user. |
-| **Buttons** | A verb the user would use. An action keeps **exactly the same name** for its whole life — if it is "Share link" in the header it is "Share link" in the empty state, not "Copy link". |
-| **Errors** | What happened, then the fix, then the control that performs the fix. Never "Something went wrong". Never an error code alone. |
-| **Empty states** | Invite, don't explain. One sentence, then the action. |
-| **Success** | Short and warm. Never exclamation marks — warmth comes from word choice, not punctuation. |
+| Register         | Rule                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Headings**     | A statement, not a label. "Find a time that works for everyone", not "Room setup".                                                                                                    |
+| **Body**         | One idea per sentence. Explain the mechanic, never the implementation. The words "sync", "CRDT", "socket", "slot" and "session" never reach the user.                                 |
+| **Buttons**      | A verb the user would use. An action keeps **exactly the same name** for its whole life — if it is "Share link" in the header it is "Share link" in the empty state, not "Copy link". |
+| **Errors**       | What happened, then the fix, then the control that performs the fix. Never "Something went wrong". Never an error code alone.                                                         |
+| **Empty states** | Invite, don't explain. One sentence, then the action.                                                                                                                                 |
+| **Success**      | Short and warm. Never exclamation marks — warmth comes from word choice, not punctuation.                                                                                             |
 
 ### Three rewrites
 
-**1. The grid instructions.** *(audit F5 — currently a 40-word paragraph of grey text below the
-legend, where nobody reads it)*
+**1. The grid instructions.** _(audit F5 — currently a 40-word paragraph of grey text below the
+legend, where nobody reads it)_
 
 > **Before:** "Drag to paint when you're free. Drag again over the same cells to clear them.
 > Using a keyboard: Tab to the grid, arrow keys to move, Space to toggle, Shift with arrows to
@@ -337,7 +337,7 @@ Why: the mouse instruction is one short sentence placed where the hand already i
 instruction is essential to the people who need it and noise to everyone else, so it gets a
 place rather than a paragraph.
 
-**2. The not-found screen.** *(audit V2, F2)*
+**2. The not-found screen.** _(audit V2, F2)_
 
 > **Before:** "This room isn't here. The link may be mistyped, or the room may have been swept
 > after 60 days without any activity."
@@ -350,7 +350,7 @@ Why: "swept" is our vocabulary for our garbage collector. "Cut short when it was
 the thing that actually happened to them. The last sentence lowers the cost of the only
 remaining action, which is the whole job of this screen.
 
-**3. The participant list.** *(audit F8)*
+**3. The participant list.** _(audit F8)_
 
 > **Before:** "Priya — 5 slots"
 >

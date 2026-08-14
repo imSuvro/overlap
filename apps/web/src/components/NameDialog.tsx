@@ -48,8 +48,8 @@ export function NameDialog({ title, onSubmit }: NameDialogProps): React.JSX.Elem
           </h1>
         </div>
         <p className="dialog__body">
-          Everyone in this room will see your name next to the times you pick. No account, no
-          email, nothing to install.
+          Everyone in this room will see your name next to the times you pick. No account, no email,
+          nothing to install.
         </p>
 
         <div className="field">

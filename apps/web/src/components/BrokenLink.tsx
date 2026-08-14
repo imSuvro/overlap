@@ -14,9 +14,9 @@ export function BrokenLink(): React.JSX.Element {
       title="This link is incomplete"
       body={
         <>
-          Room links end in a 22-character code, and this one doesn&rsquo;t — it was most likely
-          cut short when it was copied. Ask whoever sent it to share it again, or start your own
-          room in about ten seconds.
+          Room links end in a 22-character code, and this one doesn&rsquo;t — it was most likely cut
+          short when it was copied. Ask whoever sent it to share it again, or start your own room in
+          about ten seconds.
         </>
       }
       actions={
