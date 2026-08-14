@@ -93,9 +93,10 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
               setTitleDraft(event.target.value);
             }}
             onBlur={() => {
-              if (titleDraft !== null && titleDraft.trim() !== room.title) {
-                room.setTitle(titleDraft);
-              }
+              // Commit the trimmed value, not the draft: the comparison already trims, so
+              // sending the raw draft would push stray whitespace into shared room state.
+              const next = titleDraft?.trim() ?? '';
+              if (next.length > 0 && next !== room.title) room.setTitle(next);
               setTitleDraft(null);
             }}
             onKeyDown={(event) => {

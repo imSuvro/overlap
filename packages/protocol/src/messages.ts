@@ -35,26 +35,46 @@ function isDecodableHlc(value: string): boolean {
  * Field names are one character because these fly at drag rate over a mobile connection —
  * `k`ind, `key`, `v`alue, `s`tamp. The discriminant `k` is: `a`vailability, `n`ame, `s`etting.
  */
-export const opSchema = z.discriminatedUnion('k', [
-  z.object({
-    k: z.literal('a'),
-    key: z.string().max(64),
-    v: levelSchema,
-    s: hlcStringSchema,
-  }),
-  z.object({
-    k: z.literal('n'),
-    key: participantIdSchema,
-    v: z.string().trim().min(1).max(MAX_NAME_LENGTH),
-    s: hlcStringSchema,
-  }),
-  z.object({
-    k: z.literal('s'),
-    key: settingKeySchema,
-    v: settingValueSchema,
-    s: hlcStringSchema,
-  }),
-]);
+export const opSchema = z
+  .discriminatedUnion('k', [
+    z.object({
+      k: z.literal('a'),
+      key: z.string().max(64),
+      v: levelSchema,
+      s: hlcStringSchema,
+    }),
+    z.object({
+      k: z.literal('n'),
+      key: participantIdSchema,
+      v: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+      s: hlcStringSchema,
+    }),
+    z.object({
+      k: z.literal('s'),
+      key: settingKeySchema,
+      v: settingValueSchema,
+      s: hlcStringSchema,
+    }),
+  ])
+  /*
+   * Settings are the one op whose value type depends on its key, and the discriminated union
+   * cannot express that on its own — it would otherwise accept a null title or a textual
+   * pinned time straight into the replicated settings map. The engine rejects those too, but
+   * a contract that states the relationship is better than one that relies on being caught
+   * downstream.
+   */
+  .superRefine((op, ctx) => {
+    if (op.k !== 's') return;
+    const valid =
+      op.key === 'title' ? typeof op.v === 'string' : op.v === null || typeof op.v === 'number';
+    if (!valid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `The ${op.key} setting cannot hold that kind of value`,
+        path: ['v'],
+      });
+    }
+  });
 export type Op = z.infer<typeof opSchema>;
 
 /** Serialised form of one {@link import('@overlap/crdt').LwwMap}. */

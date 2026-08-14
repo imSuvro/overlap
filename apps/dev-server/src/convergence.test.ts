@@ -101,8 +101,14 @@ class TestParticipant {
 
   goOffline(): void {
     this.offline = true;
-    this.socket?.close();
-    this.handlers?.onClose();
+    if (this.socket) {
+      // The socket's own close listener delivers `onClose`. Calling it here as well would
+      // hand the client two closes for one disconnect and race two reconnect timers.
+      this.socket.close();
+      this.socket = null;
+    } else {
+      this.handlers?.onClose();
+    }
   }
 
   goOnline(): void {

@@ -102,6 +102,22 @@ describe('parseClientMessage — the boundary between an arbitrary browser and t
     if (!result.ok) expect(result.error).toContain('sessionId');
   });
 
+  it('binds each setting key to the kind of value it can hold', () => {
+    // Without this the replicated settings map would accept a null title or a textual pinned
+    // time, and only the engine would catch it.
+    const stamp = '1755700000000.0.abc';
+    const op = (key: string, v: unknown): string =>
+      JSON.stringify({ t: 'ops', ops: [{ k: 's', key, v, s: stamp }] });
+
+    expect(parseClientMessage(op('title', 'Sprint planning')).ok).toBe(true);
+    expect(parseClientMessage(op('finalizedInstant', 1_755_700_000_000)).ok).toBe(true);
+    expect(parseClientMessage(op('finalizedInstant', null)).ok).toBe(true);
+
+    expect(parseClientMessage(op('title', null)).ok).toBe(false);
+    expect(parseClientMessage(op('title', 42)).ok).toBe(false);
+    expect(parseClientMessage(op('finalizedInstant', 'tomorrow')).ok).toBe(false);
+  });
+
   it('rejects a name that is only whitespace', () => {
     const result = parseClientMessage(
       JSON.stringify({ t: 'ops', ops: [{ k: 'n', key: participantId, v: '   ', s: '1.0.abc' }] }),

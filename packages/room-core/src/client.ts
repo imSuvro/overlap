@@ -319,6 +319,12 @@ export class RoomClient {
         this.outbox = this.outbox.filter((op) => !acked.has(op.s));
         for (const stamp of acked) this.inFlight.delete(stamp);
         this.options.onOutboxChange?.(this.outbox);
+
+        // A flush sends at most `MAX_OPS_PER_FLUSH`, so an outbox larger than that — a very
+        // long drag, or one restored after a spell offline — has a remainder waiting. Without
+        // rescheduling here, it would sit there until the user happened to paint again, with
+        // the UI showing a pending count over a live connection.
+        if (this.outbox.length > 0) this.scheduleFlush();
         break;
       }
 

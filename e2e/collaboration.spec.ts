@@ -139,13 +139,22 @@ test.describe('several people in one room', () => {
     const stored = await page.evaluate(
       async (id) =>
         new Promise<{ outbox: number; availability: number }>((resolve, reject) => {
-          const open = indexedDB.open('overlap');
-          open.onerror = () => {
-            reject(new Error('IndexedDB unavailable'));
+          // Every failure path settles the promise. Left to `onsuccess` and `oncomplete`
+          // alone, a blocked open or an aborted transaction would hang until the whole test
+          // timed out, reporting nothing about what actually went wrong.
+          const bail = (why: string) => () => {
+            reject(new Error(why));
           };
+          setTimeout(bail('IndexedDB probe timed out'), 5_000);
+
+          const open = indexedDB.open('overlap');
+          open.onerror = bail('IndexedDB unavailable');
+          open.onblocked = bail('IndexedDB open was blocked');
           open.onsuccess = () => {
             const db = open.result;
             const tx = db.transaction(['rooms', 'outbox'], 'readonly');
+            tx.onerror = bail('IndexedDB read failed');
+            tx.onabort = bail('IndexedDB read was aborted');
             const roomRequest = tx.objectStore('rooms').get(id);
             const outboxRequest = tx.objectStore('outbox').get(id);
             tx.oncomplete = () => {

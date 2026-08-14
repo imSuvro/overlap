@@ -3,6 +3,7 @@ import {
   MAX_ROOM_SLOTS,
   availabilityKey,
   parseAvailabilityKey,
+  roomConfigSchema,
   roomDraftSchema,
   type RoomDraft,
 } from './domain.js';
@@ -89,6 +90,56 @@ describe('roomDraftSchema', () => {
 
   it('rejects a malformed date', () => {
     expect(roomDraftSchema.safeParse(draft({ dates: ['20-08-2026'] })).success).toBe(false);
+  });
+
+  it('rejects a date that is shaped right but does not exist', () => {
+    // `2026-02-31` passes the pattern and every range check, then silently normalises to
+    // 3 March — so the room would materialise slots on a day nobody chose.
+    for (const date of ['2026-02-31', '2026-04-31', '2025-02-29', '2026-13-01', '2026-00-10']) {
+      expect(roomDraftSchema.safeParse(draft({ dates: [date] })).success).toBe(false);
+    }
+    expect(roomDraftSchema.safeParse(draft({ dates: ['2024-02-29'] })).success).toBe(true);
+  });
+});
+
+describe('roomConfigSchema', () => {
+  // The config is read back from durable storage and from `welcome` frames, both of which can
+  // carry something written by an older build. Validating only the draft leaves that unguarded.
+  function config(overrides: Record<string, unknown> = {}): unknown {
+    return {
+      roomId: generateRoomId(),
+      anchorZone: 'America/New_York',
+      dates: ['2026-08-20', '2026-08-21'],
+      dayStartMinute: 9 * 60,
+      dayEndMinute: 17 * 60,
+      slotMinutes: 30,
+      createdAt: 1_755_700_000_000,
+      ...overrides,
+    };
+  }
+
+  it('accepts a coherent config', () => {
+    expect(roomConfigSchema.safeParse(config()).success).toBe(true);
+  });
+
+  it('applies the same schedule invariants the draft does', () => {
+    expect(
+      roomConfigSchema.safeParse(config({ dayStartMinute: 1_000, dayEndMinute: 600 })).success,
+    ).toBe(false);
+    expect(
+      roomConfigSchema.safeParse(config({ dates: ['2026-08-20', '2026-08-20'] })).success,
+    ).toBe(false);
+    expect(roomConfigSchema.safeParse(config({ dayEndMinute: 1_000 })).success).toBe(false);
+    expect(
+      roomConfigSchema.safeParse(
+        config({
+          dates: Array.from({ length: 31 }, (_, i) => `2026-08-${String(i + 1).padStart(2, '0')}`),
+          dayStartMinute: 0,
+          dayEndMinute: 1_440,
+          slotMinutes: 15,
+        }),
+      ).success,
+    ).toBe(false);
   });
 });
 
