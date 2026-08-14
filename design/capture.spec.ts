@@ -18,7 +18,9 @@ const API_ORIGIN = process.env.OVERLAP_BASE_URL ?? 'http://127.0.0.1:8787';
 const WIDTHS = [
   { name: 'desktop', width: 1440, height: 900 },
   { name: 'tablet', width: 768, height: 1024 },
-  { name: 'mobile', width: 390, height: 844 },
+  // 360 is the narrowest width the layout is designed to hold, so it is the one worth
+  // photographing. `e2e/smoke.spec.ts` asserts no sideways scroll at all three.
+  { name: 'mobile', width: 360, height: 800 },
 ] as const;
 
 interface ConsoleEntry {
@@ -198,6 +200,32 @@ test('an empty room, seen by its first arrival', async ({ page }) => {
   await joinRoom(page, roomId, 'Sam');
   await page.waitForTimeout(600);
   await shoot(page, '08-room-empty');
+});
+
+/**
+ * Dark mode, photographed rather than assumed.
+ *
+ * The palette is a rebalance rather than an inversion — the heat ramp has to keep climbing from
+ * near-background to bright, or the busiest cells stop being the loudest thing on screen — and
+ * that is not a claim a token file can make on its own.
+ */
+test('the room in dark mode', async ({ browser }) => {
+  const context = await browser.newContext({
+    timezoneId: 'America/New_York',
+    colorScheme: 'dark',
+    viewport: { width: 1440, height: 900 },
+  });
+  const page = await context.newPage();
+  watchConsole(page, 'dark');
+
+  const roomId = await makeRoom(page, 'Design review with the whole team');
+  await seedCrowd(browser, roomId);
+  await joinRoom(page, roomId, 'Sam');
+  await paint(page, 2, 18);
+  await page.waitForTimeout(600);
+  await shoot(page, '10-room-dark');
+
+  await context.close();
 });
 
 test.afterAll(async () => {
