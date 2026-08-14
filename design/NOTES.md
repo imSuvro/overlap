@@ -36,3 +36,35 @@ than a silent overwrite. Brand assets found and honoured: the two-square wordmar
 and the reason there is no `display: swap` anywhere. Any move to a webfont in P2 has to carry
 that property forward (self-hosted, preloaded, `display: swap`, metric-matched fallback) or it
 is a regression wearing better clothes.
+
+---
+
+## P2 — Design direction
+
+**Chose "Density": the data is the only saturated colour in the product.** The heat ramp becomes
+the brand rather than a chart palette, so the primary button, focus ring, wordmark and busiest
+cell all draw from one six-stop scale. Correction applied during self-critique: the neutral is
+warm paper, never grey, or the instrument reads clinical and loses the consumer warmth that
+already works.
+
+**Rejected "Ledger" (paper planner).** Skeuomorphic notebook is a recognised costume, and worse,
+a static-paper metaphor lies about a product whose entire point is that other people's marks
+appear live under your cursor.
+
+**Rejected "Daylight" as a whole, promoted one part.** Washing the grid in a diurnal gradient
+directly breaks the documented reason the heat ramp exists — one hue climbing in lightness so
+the busiest cell dominates. Two colour systems in one plane cancel each other. The idea survives
+*beside* the grid: a low-chroma daylight rail down the time gutter, which is now the signature
+element. It sits outside the grid plane so it cannot compete, and it makes the per-viewer
+timezone promise visible instead of merely claimed.
+
+**Dead end: adding a webfont.** Considered a self-hosted variable display face for
+cross-platform heading consistency (Georgia on Windows vs Iowan on macOS is a real difference).
+Rejected: Overlap is opened from a chat link on mobile data, often once, and system stacks buy
+zero requests, zero FOUT, zero CLS and text on first paint. Spent the consistency budget instead
+on narrowing the display stack to put Charter first — present on both platforms and much closer
+to Iowan than Georgia is. `font-display: swap` is consequently N/A and DESIGN.md says so
+explicitly rather than leaving it looking forgotten.
+
+**Boldness budget spent in one place: the daylight rail.** Everything else is deliberately
+disciplined so it can be the thing people remember.
