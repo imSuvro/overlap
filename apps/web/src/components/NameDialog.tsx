@@ -36,11 +36,20 @@ export function NameDialog({ title, onSubmit }: NameDialogProps): React.JSX.Elem
         }}
       >
         <Wordmark />
-        <h1 className="dialog__title" id="name-dialog-title">
-          Join &ldquo;{title}&rdquo;
-        </h1>
+        {/*
+          The room name is its own line rather than sitting inside quotes on the heading. Clamping
+          a long title between quote marks stranded the closing quote on a line of its own, and a
+          room called "Design review with the whole team" is not an unusual length.
+        */}
+        <div>
+          <p className="dialog__eyebrow">You&rsquo;re joining</p>
+          <h1 className="dialog__title" id="name-dialog-title">
+            {title}
+          </h1>
+        </div>
         <p className="dialog__body">
-          Everyone in this room will see your name next to the times you pick. No account needed.
+          Everyone in this room will see your name next to the times you pick. No account, no
+          email, nothing to install.
         </p>
 
         <div className="field">
@@ -54,14 +63,18 @@ export function NameDialog({ title, onSubmit }: NameDialogProps): React.JSX.Elem
             value={name}
             maxLength={MAX_NAME_LENGTH}
             autoComplete="name"
-            placeholder="e.g. Priya"
+            placeholder="Priya"
+            aria-describedby="participant-name-hint"
             onChange={(event) => {
               setName(event.target.value);
             }}
           />
+          <p className="field__hint" id="participant-name-hint">
+            First name is plenty — it&rsquo;s only so people can tell whose picks are whose.
+          </p>
         </div>
 
-        <button type="submit" className="button" disabled={trimmed.length === 0}>
+        <button type="submit" className="button button--block" disabled={trimmed.length === 0}>
           Start picking times
         </button>
       </form>

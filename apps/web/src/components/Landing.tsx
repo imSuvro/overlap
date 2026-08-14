@@ -1,8 +1,9 @@
 import { MAX_ROOM_DATES, MAX_TITLE_LENGTH, type RoomDraft } from '@overlap/protocol';
 import { addDays, localDateAt, localTimeZone, parseLocalDate, toLocalDate } from '@overlap/time';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { createRoom, roomPath } from '../lib/api.js';
-import { Wordmark } from './Chrome.js';
+import { IconGlyph, Wordmark } from './Chrome.js';
+import { DemoGrid } from './DemoGrid.js';
 
 const HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -43,6 +44,21 @@ function monthGrid(year: number, month: number): MonthCell[] {
   });
 }
 
+const HOW_IT_WORKS = [
+  {
+    title: 'Pick the days worth considering',
+    body: 'Choose your dates and a rough window of hours. That is the entire setup.',
+  },
+  {
+    title: 'Send one link',
+    body: 'The URL is the room. Anyone who opens it can join straight away — no account, no install, nothing to download.',
+  },
+  {
+    title: 'Watch the answer appear',
+    body: 'Everyone marks when they are free, in their own timezone. The times that suit the whole group darken as you go.',
+  },
+] as const;
+
 export function Landing(): React.JSX.Element {
   const zone = useMemo(() => localTimeZone(), []);
   const today = useMemo(() => localDateAt(Date.now(), zone), [zone]);
@@ -55,6 +71,8 @@ export function Landing(): React.JSX.Element {
   const [monthOffset, setMonthOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const titleRef = useRef<HTMLInputElement | null>(null);
 
   const visibleMonth = useMemo(() => {
     const parsed = parseLocalDate(today);
@@ -103,7 +121,11 @@ export function Landing(): React.JSX.Element {
       // shell, and this way a hard refresh of the resulting URL is exercised from the start.
       location.assign(roomPath(created.config.roomId));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Something went wrong');
+      setError(
+        cause instanceof Error
+          ? `${cause.message}. Check your connection and try again — nothing you typed is lost.`
+          : 'The room could not be created. Check your connection and try again — nothing you typed is lost.',
+      );
       setSubmitting(false);
     }
   }
@@ -111,27 +133,55 @@ export function Landing(): React.JSX.Element {
   return (
     <div className="landing">
       <div className="landing__inner">
-        <header className="landing__hero">
-          <Wordmark size="lg" />
-          <h1 className="landing__title">Find a time that works for everyone</h1>
-          <p className="landing__subtitle">
-            Share one link. Everyone paints when they&rsquo;re free, in their own timezone, and the
-            overlap appears as you go. No accounts, no install.
-          </p>
+        {/*
+          The hero shows the product before it asks for anything. The old page led with a
+          headline and an empty text field, and put its only button 1,200px below the fold —
+          so the first screen argued for setup it had not yet earned.
+        */}
+        <header className="hero">
+          <div className="hero__text">
+            <Wordmark size="lg" />
+            <h1 className="hero__title">Find a time that works for everyone</h1>
+            <p className="hero__subtitle">
+              For the person who got stuck organising it. Share one link, everyone marks when
+              they&rsquo;re free — in their own timezone — and the overlap draws itself.
+            </p>
+            <div className="hero__actions">
+              <button
+                type="button"
+                className="button button--large"
+                onClick={() => {
+                  titleRef.current?.focus();
+                  titleRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }}
+              >
+                Create a room
+              </button>
+              <span className="hero__aside">Free, and no sign-up — for you or for them.</span>
+            </div>
+          </div>
+
+          <DemoGrid />
         </header>
 
         <form
           className="card create-form"
+          aria-labelledby="create-form-title"
           onSubmit={(event) => {
             event.preventDefault();
             void submit();
           }}
         >
+          <h2 className="create-form__title" id="create-form-title">
+            Set up your room
+          </h2>
+
           <div className="field">
             <label className="field__label" htmlFor="room-title-input">
               What are you planning?
             </label>
             <input
+              ref={titleRef}
               id="room-title-input"
               className="input"
               value={title}
@@ -144,41 +194,40 @@ export function Landing(): React.JSX.Element {
           </div>
 
           <div className="date-picker">
-            <div className="create-form__footer">
-              <span className="field__label">Which days?</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <div className="date-picker__header">
+              <span className="field__label" id="date-picker-label">
+                Which days?
+              </span>
+              <span className="month-nav">
                 <button
                   type="button"
-                  className="button button--ghost"
+                  className="button button--ghost month-nav__step"
                   aria-label="Previous month"
                   disabled={monthOffset === 0}
                   onClick={() => {
                     setMonthOffset((offset) => Math.max(0, offset - 1));
                   }}
                 >
-                  ←
+                  <IconGlyph name="chevronLeft" />
                 </button>
-                <span style={{ minWidth: '9rem', textAlign: 'center', fontWeight: 600 }}>
+                <span className="month-nav__label" aria-live="polite">
                   {monthLabel}
                 </span>
                 <button
                   type="button"
-                  className="button button--ghost"
+                  className="button button--ghost month-nav__step"
                   aria-label="Next month"
+                  disabled={monthOffset === 11}
                   onClick={() => {
                     setMonthOffset((offset) => Math.min(11, offset + 1));
                   }}
                 >
-                  →
+                  <IconGlyph name="chevronRight" />
                 </button>
               </span>
             </div>
 
-            <div
-              className="date-picker__grid"
-              role="group"
-              aria-label="Choose the days to consider"
-            >
+            <div className="date-picker__grid" role="group" aria-labelledby="date-picker-label">
               {WEEKDAYS.map((weekday) => (
                 <div className="date-picker__weekday" key={weekday} aria-hidden="true">
                   {weekday}
@@ -204,10 +253,10 @@ export function Landing(): React.JSX.Element {
                 );
               })}
             </div>
-            <p className="field__hint">
+            <p className="field__hint" aria-live="polite">
               {dates.length === 0
-                ? 'Pick at least one day.'
-                : `${String(dates.length)} day${dates.length === 1 ? '' : 's'} selected.`}
+                ? 'Pick at least one day to continue.'
+                : `${String(dates.length)} day${dates.length === 1 ? '' : 's'} chosen.`}
             </p>
           </div>
 
@@ -274,40 +323,47 @@ export function Landing(): React.JSX.Element {
           </div>
 
           <p className="field__hint">
-            Your hours are set in <strong>{zone.replace(/_/g, ' ')}</strong>. Everyone else will see
-            the same moments in their own timezone.
+            You&rsquo;re choosing these hours in <strong>{zone.replace(/_/g, ' ')}</strong>.
+            Everyone else sees the same moments in their own timezone.
           </p>
 
-          {error !== null && <p className="error-text">{error}</p>}
+          {error !== null && (
+            <p className="error-text" role="alert">
+              <span className="error-text__mark" aria-hidden="true">
+                <IconGlyph name="alert" />
+              </span>
+              <span>{error}</span>
+            </p>
+          )}
 
           <div className="create-form__footer">
-            <button type="submit" className="button" disabled={!canSubmit}>
-              {submitting ? 'Creating…' : 'Create the room'}
+            <button
+              type="submit"
+              className="button button--large"
+              disabled={!canSubmit}
+              aria-busy={submitting}
+            >
+              {submitting && <span className="spinner" aria-hidden="true" />}
+              {submitting ? 'Creating your room' : 'Create the room'}
             </button>
           </div>
         </form>
 
-        <section className="landing__how" aria-label="How it works">
-          {[
-            {
-              title: 'Pick your days',
-              body: 'Choose the dates and hours worth considering. That is the whole setup.',
-            },
-            {
-              title: 'Share the link',
-              body: 'The URL is the room. Anyone who opens it can join — no account, no install.',
-            },
-            {
-              title: 'Watch the overlap',
-              body: 'Everyone paints when they are free. The busiest times darken as you go.',
-            },
-          ].map((step, index) => (
-            <article className="card how-step" key={step.title}>
-              <span className="how-step__number">{index + 1}</span>
-              <h2 className="how-step__title">{step.title}</h2>
-              <p className="how-step__body">{step.body}</p>
-            </article>
-          ))}
+        <section className="landing__how" aria-labelledby="how-title">
+          <h2 className="landing__how-title" id="how-title">
+            How it works
+          </h2>
+          <ol className="how-steps">
+            {HOW_IT_WORKS.map((step, index) => (
+              <li className="how-step" key={step.title}>
+                <span className="how-step__number tabular" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <h3 className="how-step__title">{step.title}</h3>
+                <p className="how-step__body">{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </section>
       </div>
     </div>

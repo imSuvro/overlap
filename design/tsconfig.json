@@ -1,0 +1,11 @@
+{
+  // Same shape as `e2e/tsconfig.json`: the screenshot harness runs in Node, but its Playwright
+  // page callbacks run in the browser, so it needs both libs. Kept as a separate project because
+  // these files are tooling for the design pass, not part of the app or the gated suite.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}

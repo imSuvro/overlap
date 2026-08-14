@@ -33,7 +33,9 @@ export interface CellAddress {
   readonly row: number;
 }
 
-const GUTTER = 62;
+// Wide enough for "12:00 AM" on one line *plus* the daylight rail that runs between the labels
+// and the first column. At 62 the label wrapped onto two lines the moment the rail took its 4px.
+const GUTTER = 74;
 const HEADER = 44;
 const GAP = 2;
 const MIN_COLUMN_WIDTH = 44;
@@ -51,7 +53,7 @@ export interface MetricsInput {
 
 export function computeMetrics(input: MetricsInput): GridMetrics {
   const { columns, rows, availableWidth } = input;
-  const gutter = input.compact === true ? 50 : GUTTER;
+  const gutter = input.compact === true ? 62 : GUTTER;
 
   if (columns <= 0 || rows <= 0) {
     return {

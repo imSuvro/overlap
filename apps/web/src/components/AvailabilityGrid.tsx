@@ -11,6 +11,7 @@ import {
   type CellAddress,
   type GridMetrics,
 } from '../lib/layout.js';
+import { daylightGradient } from '../lib/daylight.js';
 import { heatColour, readPalette, type Palette } from '../lib/palette.js';
 import { PresenceLayer } from './PresenceLayer.js';
 
@@ -528,6 +529,7 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
         style={{ width: metrics.width, height: metrics.height }}
       >
         <ColumnHeaders metrics={metrics} grid={grid} />
+        <DaylightRail metrics={metrics} grid={grid} />
         <RowLabels metrics={metrics} grid={grid} />
 
         <canvas
@@ -602,26 +604,51 @@ function ColumnHeaders({
     <div aria-hidden="true">
       {grid.columns.map((column, index) => (
         <div
+          className="grid-column-head"
           key={column.dateKey}
+          // Geometry only — everything static lives in the stylesheet.
           style={{
-            position: 'absolute',
             left: metrics.gutter + index * metrics.columnWidth,
-            top: 0,
             width: metrics.columnWidth,
             height: metrics.header,
-            display: 'grid',
-            placeContent: 'center',
-            textAlign: 'center',
-            lineHeight: 1.15,
           }}
         >
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-faint)', fontWeight: 600 }}>
-            {column.weekdayLabel}
-          </span>
-          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>{column.dayLabel}</span>
+          <span className="grid-column-head__weekday">{column.weekdayLabel}</span>
+          <span className="grid-column-head__day">{column.dayLabel}</span>
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * The daylight rail: the one bold thing in the interface.
+ *
+ * Drawn from this viewer's rows, so the band a person in Berlin sees is their own evening even
+ * though the instants are identical to the ones a person in Chicago is looking at over lunch.
+ * That is the timezone promise made visible instead of merely claimed.
+ */
+function DaylightRail({
+  metrics,
+  grid,
+}: {
+  metrics: GridMetrics;
+  grid: ViewerGrid;
+}): React.JSX.Element {
+  const gradient = daylightGradient(grid.rows.map((row) => row.minuteOfDay));
+
+  return (
+    <div
+      className="daylight-rail"
+      aria-hidden="true"
+      style={{
+        // Between the row labels (which stop at `gutter - 14`) and the first column.
+        left: metrics.gutter - 10,
+        top: metrics.header,
+        height: metrics.rows * metrics.rowHeight,
+        background: gradient,
+      }}
+    />
   );
 }
 
@@ -641,16 +668,12 @@ function RowLabels({
         if (!show) return null;
         return (
           <div
+            className="grid-row-label"
             key={`${row.minuteOfDay}#${row.occurrence}`}
             style={{
-              position: 'absolute',
-              left: 0,
               top: metrics.header + index * metrics.rowHeight - 7,
-              width: metrics.gutter - 8,
-              textAlign: 'right',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--ink-faint)',
-              fontVariantNumeric: 'tabular-nums',
+              // Stops short of the daylight rail, which occupies the last 10px of the gutter.
+              width: metrics.gutter - 16,
             }}
           >
             {row.label}

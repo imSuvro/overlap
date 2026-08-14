@@ -2,7 +2,7 @@ import type { Cursor, Level, Participant, Presence, RoomConfig } from '@overlap/
 import { RoomClient, RoomState, type ConnectionStatus } from '@overlap/room-core';
 import { materializeSlots, type Slot } from '@overlap/time';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { socketUrl } from './api.js';
+import { fetchRoom, socketUrl } from './api.js';
 import { loadIdentity, rememberName, sessionId } from './identity.js';
 import { loadCachedRoom, loadOutbox, saveCachedRoom, saveOutbox } from './storage.js';
 
@@ -20,7 +20,11 @@ export interface RoomSession {
   readonly pendingCount: number;
   readonly notice: string | null;
   readonly loading: boolean;
+  /** The API answered 404. The room is definitely not there. */
   readonly missing: boolean;
+  /** The API could not be reached at all and nothing was cached. Absence is *not* proven. */
+  readonly unreachable: boolean;
+  readonly retry: () => void;
   /**
    * Bumps whenever the *labels* need to change. Held still during a drag, so the
    * accessibility layer is not rewritten sixty times a second over an interaction that has
@@ -60,7 +64,15 @@ export function useRoom(roomId: string): RoomSession {
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
+  const [unreachable, setUnreachable] = useState(false);
   const [client, setClient] = useState<RoomClient | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  const retry = useCallback(() => {
+    setUnreachable(false);
+    setLoading(true);
+    setAttempt((count) => count + 1);
+  }, []);
 
   const draggingRef = useRef(false);
   const commitTimerRef = useRef<number | null>(null);
@@ -81,14 +93,56 @@ export function useRoom(roomId: string): RoomSession {
     let disposed = false;
     let created: RoomClient | null = null;
 
+    /*
+     * Read through a call, not directly.
+     *
+     * `disposed` only ever flips in the cleanup, which the compiler cannot see from inside
+     * `boot`, so after the first `if (disposed) return` it narrows the flag to `false` for the
+     * rest of the function and every later check becomes provably dead code. Going through a
+     * function returns an un-narrowed boolean, which is the truth: any `await` below can be
+     * resumed after this effect has been torn down.
+     */
+    const isDisposed = (): boolean => disposed;
+
     async function boot(): Promise<void> {
       const [cached, outbox] = await Promise.all([loadCachedRoom(roomId), loadOutbox(roomId)]);
-      if (disposed) return;
+      if (isDisposed()) return;
 
       // A cached room renders instantly and offline; the socket then merges the authoritative
       // view on top. There is no "loading over stale data" state to manage because merging is
       // the same operation either way.
       if (cached) setConfig(cached.config);
+
+      /*
+       * With nothing cached, settle whether the room exists *before* opening a socket.
+       *
+       * Absence used to be inferred from a socket that had not connected within four seconds,
+       * which meant a dead room sat there reopening a WebSocket against a 404 forever. Asking
+       * the API is a definite answer in one round trip, and asking it first means no socket is
+       * ever opened only to be torn down mid-handshake.
+       *
+       * The cached path deliberately skips this and connects immediately: offline-first is the
+       * point, and a cache is a better thing to show than a spinner.
+       */
+      if (!cached) {
+        try {
+          const found = await fetchRoom(roomId);
+          if (isDisposed()) return;
+          if (!found) {
+            setMissing(true);
+            setLoading(false);
+            return;
+          }
+          setConfig(found.config);
+        } catch {
+          // Unreachable is not the same as absent — the user may simply be on a train — so this
+          // is an error to recover from, never "this room does not exist".
+          if (isDisposed()) return;
+          setUnreachable(true);
+          setLoading(false);
+          return;
+        }
+      }
 
       const roomClient = new RoomClient({
         participantId: identity.participantId,
@@ -153,10 +207,19 @@ export function useRoom(roomId: string): RoomSession {
       setClient(roomClient);
       setLoading(false);
 
-      // If the socket never comes up and nothing was cached, the room genuinely may not exist.
-      window.setTimeout(() => {
-        if (!disposed && roomClient.config === null && !cached) setMissing(true);
-      }, 4_000);
+      // Rendering from a cache is a promise that the cache is still true. Confirming it in the
+      // background costs nothing and keeps a swept room from looking alive indefinitely.
+      if (cached) {
+        void fetchRoom(roomId).then(
+          (found) => {
+            if (isDisposed()) return;
+            if (found) setConfig(found.config);
+          },
+          () => {
+            // Offline with a cache is the case this whole design exists to serve. Nothing to do.
+          },
+        );
+      }
     }
 
     void boot();
@@ -167,7 +230,7 @@ export function useRoom(roomId: string): RoomSession {
       if (commitTimerRef.current !== null) window.clearTimeout(commitTimerRef.current);
       if (snapshotTimerRef.current !== null) window.clearTimeout(snapshotTimerRef.current);
     };
-  }, [roomId, identity.participantId, bumpCommit]);
+  }, [roomId, identity.participantId, bumpCommit, attempt]);
 
   // Adopt the config the moment the socket delivers it.
   useEffect(() => {
@@ -297,6 +360,8 @@ export function useRoom(roomId: string): RoomSession {
     notice,
     loading,
     missing,
+    unreachable,
+    retry,
     commitVersion,
     beginDrag,
     endDrag,
