@@ -11,13 +11,22 @@ import { roomPath } from '../lib/api.js';
 import { useRoom } from '../lib/useRoom.js';
 import { AvailabilityGrid } from './AvailabilityGrid.js';
 import { BestWindows } from './BestWindows.js';
-import { ConnectionBadge, ShareButton, Toast, Wordmark } from './Chrome.js';
+import {
+  ConnectionBadge,
+  IconGlyph,
+  OfflineNotice,
+  ShareButton,
+  StatusScreen,
+  Toast,
+  Wordmark,
+} from './Chrome.js';
 import { NameDialog } from './NameDialog.js';
 import { ParticipantList } from './ParticipantList.js';
+import { RoomSkeleton } from './RoomSkeleton.js';
 
-const PAINT_MODES: readonly { level: Level; label: string; swatch: string }[] = [
-  { level: LEVEL.available, label: 'Free', swatch: 'var(--heat-4)' },
-  { level: LEVEL.ifNeedBe, label: 'If need be', swatch: 'var(--heat-2)' },
+const PAINT_MODES: readonly { level: Level; label: string; tone: 'free' | 'maybe' }[] = [
+  { level: LEVEL.available, label: 'Free', tone: 'free' },
+  { level: LEVEL.ifNeedBe, label: 'If need be', tone: 'maybe' },
 ];
 
 export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
@@ -31,36 +40,64 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
 
   const grid = useMemo(() => buildViewerGrid(room.slots, viewerZone), [room.slots, viewerZone]);
 
-  const { finalizedInstant } = room;
+  const { finalizedInstant, participants, participantId, slots, state, commitVersion } = room;
 
-  if (room.loading) {
+  /**
+   * Has anyone marked anything at all?
+   *
+   * Drives the grid's empty state. Recomputed on `commitVersion` for the same reason the rest
+   * of the derived state is: `RoomState` is mutable, so React cannot see a change by identity.
+   */
+  const marks = useMemo(() => {
+    let mine = 0;
+    let anyone = 0;
+    for (const slot of slots) {
+      let touched = false;
+      for (const participant of participants) {
+        if (state.levelFor(participant.participantId, slot.instant) === LEVEL.unavailable) continue;
+        touched = true;
+        if (participant.participantId === participantId) mine += 1;
+      }
+      if (touched) anyone += 1;
+    }
+    return { mine, anyone };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- commitVersion is the invalidation signal
+  }, [slots, participants, state, participantId, commitVersion]);
+
+  if (room.loading) return <RoomSkeleton />;
+
+  if (room.unreachable) {
     return (
-      <div className="centered-message">
-        <div className="centered-message__inner">
-          <Wordmark size="lg" />
-          <p style={{ color: 'var(--ink-soft)' }}>Opening the room…</p>
-        </div>
-      </div>
+      <StatusScreen
+        tone="alert"
+        title="We can't reach this room"
+        body="Your connection dropped before the room could load. Nothing is lost — try again once you're back online."
+        actions={
+          <>
+            <button type="button" className="button" onClick={room.retry}>
+              Try again
+            </button>
+            <a className="button button--secondary" href="/">
+              Start a new room
+            </a>
+          </>
+        }
+      />
     );
   }
 
   if (room.missing || !room.config) {
     return (
-      <div className="centered-message">
-        <div className="centered-message__inner">
-          <Wordmark size="lg" />
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--text-2xl)' }}>
-            This room isn&rsquo;t here
-          </h1>
-          <p style={{ color: 'var(--ink-soft)' }}>
-            The link may be mistyped, or the room may have been swept after 60 days without any
-            activity.
-          </p>
+      <StatusScreen
+        tone="alert"
+        title="This room is gone"
+        body="Either the link points somewhere that never existed, or the room was cleared after 60 days of quiet. Starting a new one takes about ten seconds."
+        actions={
           <a className="button" href="/">
             Start a new room
           </a>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
@@ -70,6 +107,9 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
 
   const shareUrl = `${location.origin}${roomPath(roomId)}`;
   const durationMs = slotDurationMs(room.config.slotMinutes);
+  // An empty room is not a scheduling problem yet. It is an invitation problem, and until it is
+  // solved painting your own availability into a room nobody can see achieves nothing.
+  const alone = participants.length <= 1;
 
   return (
     <div className="room">
@@ -78,51 +118,63 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
       </a>
 
       <header className="room__header">
-        <Wordmark />
+        <div className="room__brand">
+          <Wordmark />
+        </div>
 
         <div className="room__identity">
           <label className="visually-hidden" htmlFor="room-title">
-            Room name
+            Room name — everyone in the room sees this
           </label>
-          <input
-            id="room-title"
-            className="room__title-input"
-            value={titleDraft ?? room.title}
-            maxLength={MAX_TITLE_LENGTH}
-            onChange={(event) => {
-              setTitleDraft(event.target.value);
-            }}
-            onBlur={() => {
-              // Commit the trimmed value, not the draft: the comparison already trims, so
-              // sending the raw draft would push stray whitespace into shared room state.
-              const next = titleDraft?.trim() ?? '';
-              if (next.length > 0 && next !== room.title) room.setTitle(next);
-              setTitleDraft(null);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur();
-              if (event.key === 'Escape') {
+          <div className="room__title-wrap">
+            <input
+              id="room-title"
+              className="room__title-input"
+              value={titleDraft ?? room.title}
+              maxLength={MAX_TITLE_LENGTH}
+              onChange={(event) => {
+                setTitleDraft(event.target.value);
+              }}
+              onBlur={() => {
+                // Commit the trimmed value, not the draft: the comparison already trims, so
+                // sending the raw draft would push stray whitespace into shared room state.
+                const next = titleDraft?.trim() ?? '';
+                if (next.length > 0 && next !== room.title) room.setTitle(next);
                 setTitleDraft(null);
-                event.currentTarget.blur();
-              }
-            }}
-          />
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') event.currentTarget.blur();
+                if (event.key === 'Escape') {
+                  setTitleDraft(null);
+                  event.currentTarget.blur();
+                }
+              }}
+            />
+            <span className="room__title-hint" aria-hidden="true">
+              Rename
+            </span>
+          </div>
           <span className="room__zone">
-            Shown in your timezone · {viewerZone.replace(/_/g, ' ')}
+            Your timezone · {viewerZone.replace(/_/g, ' ')}
           </span>
         </div>
 
         <div className="room__actions">
           <ConnectionBadge status={room.status} pendingCount={room.pendingCount} />
-          <ShareButton url={shareUrl} />
+          <ShareButton url={shareUrl} variant="secondary" />
         </div>
       </header>
 
       <main className="room__body">
+        <OfflineNotice status={room.status} pendingCount={room.pendingCount} />
+
         {finalizedInstant !== null && (
           <div className="finalized">
+            <span className="finalized__mark" aria-hidden="true">
+              <IconGlyph name="pin" />
+            </span>
             <div>
-              <div className="finalized__label">Pinned</div>
+              <div className="finalized__label">Everyone&rsquo;s time</div>
               <div className="finalized__when">
                 {formatFullDate(finalizedInstant, viewerZone)} ·{' '}
                 {formatTimeOfDay(finalizedInstant, viewerZone)} –{' '}
@@ -143,6 +195,21 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
           </div>
         )}
 
+        {alone && (
+          <section className="invite" aria-labelledby="invite-title">
+            <div className="invite__text">
+              <h2 className="invite__title" id="invite-title">
+                You&rsquo;re the only one here
+              </h2>
+              <p className="invite__body">
+                Send this link to everyone you&rsquo;re planning with. They can open it and start
+                marking times straight away — no account, no install.
+              </p>
+            </div>
+            <ShareButton url={shareUrl} variant="large" />
+          </section>
+        )}
+
         <section className="grid-panel" id="availability-grid" aria-label="Your availability">
           <div className="grid-panel__toolbar">
             <div className="paint-modes" role="group" aria-label="What painting marks">
@@ -156,70 +223,100 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
                     setPaintLevel(mode.level);
                   }}
                 >
-                  <span className="paint-modes__swatch" style={{ background: mode.swatch }} />
+                  <span className={`paint-modes__swatch paint-modes__swatch--${mode.tone}`} />
                   {mode.label}
                 </button>
               ))}
             </div>
+            {/*
+              Only once there is something to clear. While the grid is empty the invitation
+              card is already saying "drag across the times you're free" in the middle of the
+              grid, and saying it twice on one screen reads as a page that is not listening.
+            */}
+            {marks.mine > 0 && (
+              <p className="grid-panel__lede">Drag again over the same times to clear them.</p>
+            )}
           </div>
 
-          <AvailabilityGrid
-            grid={grid}
-            state={room.state}
-            participants={room.participants}
-            participantId={room.participantId}
-            slotMinutes={room.config.slotMinutes}
-            viewerZone={viewerZone}
-            paintLevel={paintLevel}
-            finalizedInstant={finalizedInstant}
-            peers={room.peers}
-            commitVersion={room.commitVersion}
-            onPaint={room.setLevels}
-            onBeginDrag={room.beginDrag}
-            onEndDrag={room.endDrag}
-            onCursor={room.sendCursor}
-          />
+          <div className="grid-panel__stage">
+            <AvailabilityGrid
+              grid={grid}
+              state={room.state}
+              participants={participants}
+              participantId={participantId}
+              slotMinutes={room.config.slotMinutes}
+              viewerZone={viewerZone}
+              paintLevel={paintLevel}
+              finalizedInstant={finalizedInstant}
+              peers={room.peers}
+              commitVersion={commitVersion}
+              onPaint={room.setLevels}
+              onBeginDrag={room.beginDrag}
+              onEndDrag={room.endDrag}
+              onCursor={room.sendCursor}
+            />
+
+            {/*
+              The invitation sits over the grid rather than under it, because that is where the
+              hand already is. `pointer-events: none` so the very drag it is asking for passes
+              straight through it, and it leaves the moment the first cell is painted.
+            */}
+            {marks.anyone === 0 && (
+              <div className="grid-invite" aria-hidden="true">
+                <span className="grid-invite__card">Drag across the times you&rsquo;re free</span>
+              </div>
+            )}
+          </div>
 
           <div className="grid-legend">
             <span className="grid-legend__ramp">
-              <span>Nobody</span>
+              <span>Nobody free</span>
               <span className="grid-legend__chips">
                 {[0, 1, 2, 3, 4, 5].map((step) => (
-                  <span
-                    key={step}
-                    className="grid-legend__chip"
-                    style={{ background: `var(--heat-${String(step)})` }}
-                  />
+                  <span key={step} className={`grid-legend__chip grid-legend__chip--${step}`} />
                 ))}
               </span>
-              <span>Everyone</span>
+              <span>Everyone free</span>
             </span>
-            <span>Your picks are outlined</span>
-          </div>
+            <span className="grid-legend__mine">Your own picks are outlined</span>
 
-          <p className="grid-hint">
-            Drag to paint when you&rsquo;re free. Drag again over the same cells to clear them.
-            Using a keyboard: Tab to the grid, arrow keys to move, Space to toggle, Shift with
-            arrows to paint a block.
-          </p>
+            <details className="keyboard-help">
+              <summary className="keyboard-help__summary">Keyboard shortcuts</summary>
+              <ul className="keyboard-help__list">
+                <li>
+                  <kbd>Tab</kbd> moves into the grid
+                </li>
+                <li>
+                  <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> move between times
+                </li>
+                <li>
+                  <kbd>Space</kbd> marks or clears the time you&rsquo;re on
+                </li>
+                <li>
+                  <kbd>Shift</kbd> with an arrow marks a whole block
+                </li>
+              </ul>
+            </details>
+          </div>
         </section>
 
         <aside className="room__aside">
           <BestWindows
             state={room.state}
-            slots={room.slots}
-            participants={room.participants}
+            slots={slots}
+            participants={participants}
             slotMinutes={room.config.slotMinutes}
             viewerZone={viewerZone}
             finalizedInstant={finalizedInstant}
             onFinalize={room.finalize}
           />
           <ParticipantList
-            participants={room.participants}
+            participants={participants}
             peers={room.peers}
             state={room.state}
-            slots={room.slots}
-            participantId={room.participantId}
+            slots={slots}
+            participantId={participantId}
+            slotMinutes={room.config.slotMinutes}
           />
         </aside>
       </main>

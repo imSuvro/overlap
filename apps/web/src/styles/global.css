@@ -364,21 +364,15 @@ a.button:hover {
 .landing {
   min-height: 100dvh;
   display: grid;
-  place-items: center;
+  justify-items: center;
   padding: var(--space-5) var(--space-4) var(--space-8);
 }
 
 .landing__inner {
-  width: min(56rem, 100%);
+  width: min(64rem, 100%);
   display: grid;
   gap: var(--space-7);
-}
-
-.landing__hero {
-  text-align: center;
-  display: grid;
-  gap: var(--space-4);
-  justify-items: center;
+  align-content: start;
 }
 
 .wordmark {
@@ -387,8 +381,12 @@ a.button:hover {
   gap: var(--space-3);
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
+}
+
+.wordmark--lg {
+  font-size: var(--text-2xl);
 }
 
 .wordmark__mark {
@@ -398,18 +396,188 @@ a.button:hover {
   flex: none;
 }
 
-.landing__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, var(--text-3xl));
-  letter-spacing: -0.02em;
-  max-width: 18ch;
+.icon {
+  width: 1.125em;
+  height: 1.125em;
+  flex: none;
 }
 
-.landing__subtitle {
+/* ---------------------------------------------------------------- hero */
+
+.hero {
+  display: grid;
+  gap: var(--space-6);
+  align-items: center;
+  padding-top: var(--space-4);
+}
+
+.hero__text {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  max-width: 15ch;
+}
+
+.hero__subtitle {
   font-size: var(--text-lg);
   color: var(--ink-soft);
-  max-width: 48ch;
+  max-width: 46ch;
 }
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.hero__aside {
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+
+@media (min-width: 60rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: var(--space-7);
+  }
+}
+
+/* ---------------------------------------------------------------- the worked example */
+
+.demo {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.demo__frame {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-floating);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.demo__head {
+  display: grid;
+  grid-template-columns: 3rem repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.demo__body {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 3px;
+}
+
+.demo__times {
+  display: grid;
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  text-align: right;
+  padding-right: var(--space-2);
+}
+
+.demo__time {
+  display: grid;
+  align-items: center;
+  line-height: 1;
+}
+
+.demo__cells {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-rows: 1.4rem;
+  gap: 3px;
+}
+
+.demo__cell {
+  border-radius: var(--radius-xs);
+  background: var(--heat-0);
+  /* The one orchestrated moment in the product: the overlap resolving rather than arriving
+     fully formed. Runs once, never loops, and the global reduced-motion block removes it. */
+  animation: demo-fill var(--motion-arrive) var(--ease-enter) both;
+}
+
+.demo__cell--0 {
+  background: var(--heat-0);
+}
+.demo__cell--1 {
+  background: var(--heat-1);
+}
+.demo__cell--2 {
+  background: var(--heat-2);
+}
+.demo__cell--3 {
+  background: var(--heat-3);
+}
+.demo__cell--4 {
+  background: var(--heat-4);
+}
+.demo__cell--5 {
+  background: var(--heat-5);
+}
+
+.demo__cell--peak {
+  box-shadow: inset 0 0 0 2px var(--accent-strong);
+}
+
+@keyframes demo-fill {
+  from {
+    opacity: 0;
+    scale: 0.86;
+  }
+}
+
+.demo__cursor {
+  position: absolute;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  box-shadow: var(--elevation-raised);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.demo__cursor--one {
+  top: 34%;
+  right: 6%;
+  border-color: hsl(258 62% 45%);
+}
+
+.demo__cursor--two {
+  bottom: 16%;
+  left: 22%;
+  border-color: hsl(178 62% 40%);
+}
+
+.demo__caption {
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- create form */
 
 .card {
   background: var(--surface);
@@ -424,6 +592,12 @@ a.button:hover {
   gap: var(--space-5);
 }
 
+.create-form__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+}
+
 .create-form__row {
   display: grid;
   gap: var(--space-4);
@@ -434,7 +608,7 @@ a.button:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-4);
 }
 
@@ -443,66 +617,137 @@ a.button:hover {
   gap: var(--space-3);
 }
 
+.date-picker__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.month-nav__step {
+  padding: var(--space-2);
+}
+
+.month-nav__label {
+  min-width: 9rem;
+  text-align: center;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+}
+
+/* Capped, because square cells across a 64rem card produce a calendar 700px tall in which the
+   month is the loudest thing on a page whose subject is not the month. */
 .date-picker__grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: var(--space-1);
+  max-width: 32rem;
 }
 
 .date-picker__weekday {
   text-align: center;
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   color: var(--ink-faint);
   padding-bottom: var(--space-1);
 }
 
+/*
+ * Affordance is carried by the border, not by lightness.
+ *
+ * Filling selectable days and leaving past ones near-white made the unusable half of the month
+ * the *lighter*, more inviting half. Ranking outward — filled beats outlined beats bare — holds
+ * regardless of which surface the calendar sits on or which theme is active.
+ */
 .date-picker__day {
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--surface-sunken);
+  background: transparent;
   color: var(--ink);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition:
-    background-color 100ms ease,
-    color 100ms ease;
+    background-color var(--motion-quick) var(--ease-standard),
+    border-color var(--motion-quick) var(--ease-standard),
+    color var(--motion-quick) var(--ease-standard);
 }
 
 .date-picker__day:hover:not(:disabled) {
   border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .date-picker__day[aria-pressed='true'] {
   background: var(--accent);
+  border-color: var(--accent);
   color: var(--accent-ink);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+}
+
+.date-picker__day[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--accent-hover);
 }
 
 .date-picker__day:disabled {
-  opacity: 0.3;
+  border-color: transparent;
+  color: var(--disabled-ink);
   cursor: default;
 }
 
-.date-picker__day--outside {
+/*
+ * Days from the neighbouring month are quieter, not disabled.
+ *
+ * Dropping their border too made the first week of September — perfectly selectable — look
+ * exactly like the first week of August, which is in the past. Muted ink says "not this month";
+ * a missing border would say "you cannot pick this", which is false.
+ */
+.date-picker__day--outside:not([aria-pressed='true']):not(:disabled) {
   color: var(--ink-faint);
-  background: transparent;
+  border-style: dashed;
 }
+
+/* ---------------------------------------------------------------- how it works */
 
 .landing__how {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.landing__how-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.how-steps {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  list-style: none;
+  padding: 0;
+  counter-reset: none;
 }
 
 .how-step {
   display: grid;
   gap: var(--space-2);
+  align-content: start;
   padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-raised);
 }
 
 .how-step__number {
@@ -514,11 +759,12 @@ a.button:hover {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .how-step__title {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
 }
 
 .how-step__body {
@@ -548,29 +794,74 @@ a.button:hover {
   border-bottom: 1px solid var(--line);
 }
 
+/*
+ * On a phone the room name outranks the wordmark.
+ *
+ * Giving them equal billing in a flex row meant a real room title truncated to
+ * "Design review with the wh…" while the word "Overlap" — which the user already knows they are
+ * looking at — kept its full width.
+ */
+.room__brand {
+  display: none;
+}
+
 .room__identity {
   display: grid;
   gap: 2px;
   min-width: 0;
   flex: 1 1 14rem;
+  order: -1;
+  width: 100%;
 }
 
+.room__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/*
+ * The room name is editable and has to look it. As a borderless heading nobody discovered it,
+ * and anyone who clicked it by accident could rename a shared room without realising.
+ */
 .room__title-input {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
   border: 1px solid transparent;
   background: transparent;
   padding: var(--space-1) var(--space-2);
   margin-left: calc(var(--space-2) * -1);
   border-radius: var(--radius-sm);
-  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
   text-overflow: ellipsis;
+  transition:
+    background-color var(--motion-quick) var(--ease-standard),
+    border-color var(--motion-quick) var(--ease-standard);
 }
 
 .room__title-input:hover {
-  border-color: var(--line);
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.room__title-hint {
+  flex: none;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity var(--motion-quick) var(--ease-standard);
+}
+
+.room__title-wrap:hover .room__title-hint,
+.room__title-input:focus-visible + .room__title-hint {
+  opacity: 1;
 }
 
 .room__zone {
@@ -584,19 +875,35 @@ a.button:hover {
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .room__body {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-5);
+  padding: var(--space-4);
   align-content: start;
   grid-template-columns: minmax(0, 1fr);
 }
 
+@media (min-width: 48rem) {
+  .room__brand {
+    display: block;
+  }
+
+  .room__identity {
+    order: 0;
+    width: auto;
+  }
+
+  .room__body {
+    padding: var(--space-5);
+  }
+}
+
 @media (min-width: 60rem) {
   .room__body {
-    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-columns: minmax(0, 1fr) 21rem;
     align-items: start;
   }
 
@@ -604,12 +911,108 @@ a.button:hover {
     position: sticky;
     top: 5.5rem;
   }
+
+  /* Full-width rows inside the two-column body. */
+  .offline-notice,
+  .finalized,
+  .invite {
+    grid-column: 1 / -1;
+  }
 }
 
 .room__aside {
   display: grid;
   gap: var(--space-4);
   align-content: start;
+}
+
+/* ---------------------------------------------------------------- invitation */
+
+/*
+ * An empty room is an invitation problem, not a scheduling problem. While you are the only
+ * person here, sharing the link is the primary action and the grid is not.
+ */
+.invite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+
+.invite__text {
+  flex: 1 1 20rem;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.invite__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.invite__body {
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  max-width: 52ch;
+}
+
+/* ---------------------------------------------------------------- offline */
+
+.offline-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--caution);
+}
+
+.offline-notice__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--caution);
+}
+
+.offline-notice__title {
+  display: block;
+  font-size: var(--text-base);
+}
+
+.offline-notice__body {
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  max-width: 60ch;
+}
+
+.share-fallback {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 16rem;
+}
+
+.share-fallback__input {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.toast__dismiss {
+  color: inherit;
+}
+
+.toast__dismiss:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink-inverse) 18%, transparent);
+  color: inherit;
 }
 
 /* ------------------------------------------------------------------ status */
@@ -677,6 +1080,43 @@ a.button:hover {
   border-bottom: 1px solid var(--line);
 }
 
+/* The instruction, at the point of use, in one sentence — not a paragraph below the legend. */
+.grid-panel__lede {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.grid-panel__stage {
+  position: relative;
+}
+
+/*
+ * The invitation sits over the grid, because that is where the hand already is.
+ *
+ * `pointer-events: none` so the very drag it is asking for passes straight through it.
+ */
+.grid-invite {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: fade-in var(--motion-arrive) var(--ease-enter) both;
+}
+
+.grid-invite__card {
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--elevation-floating);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  text-align: center;
+  max-width: calc(100% - var(--space-6));
+}
+
 .paint-modes {
   display: inline-flex;
   padding: 3px;
@@ -708,15 +1148,34 @@ a.button:hover {
 .paint-modes__swatch {
   width: 0.75rem;
   height: 0.75rem;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   flex: none;
-  border: 1px solid rgb(0 0 0 / 10%);
+  border: 1px solid var(--line-strong);
 }
 
+.paint-modes__swatch--free {
+  background: var(--heat-4);
+}
+
+.paint-modes__swatch--maybe {
+  background: var(--heat-2);
+}
+
+/*
+ * The grid is capped at a readable column width, so on a wide screen it does not fill the
+ * panel. Centring it is the fix: left-aligned, it left 44% of the card empty and read as a
+ * layout that had failed rather than a grid that had finished.
+ */
 .grid-scroll {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   padding: var(--space-4);
+  display: flex;
+  justify-content: center;
+}
+
+.grid-stage {
+  flex: none;
 }
 
 .grid-stage {
@@ -728,6 +1187,49 @@ a.button:hover {
 
 .grid-stage__canvas {
   display: block;
+}
+
+.grid-column-head {
+  position: absolute;
+  top: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  line-height: var(--leading-tight);
+}
+
+.grid-column-head__weekday {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink-faint);
+}
+
+.grid-column-head__day {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid-row-label {
+  position: absolute;
+  left: 0;
+  text-align: right;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The daylight rail — the signature element. See lib/daylight.ts for why it is built per row
+ * and DESIGN.md §2 for why it sits beside the grid rather than under it.
+ */
+.daylight-rail {
+  position: absolute;
+  width: 6px;
+  border-radius: var(--radius-full);
+  /* A hairline so the band reads as a shape even where its colour is closest to the panel. */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent);
+  pointer-events: none;
 }
 
 .grid-a11y {
@@ -786,20 +1288,88 @@ a.button:hover {
 
 .grid-legend__chips {
   display: inline-flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .grid-legend__chip {
   width: 1.25rem;
   height: 0.75rem;
-  border-radius: 3px;
-  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--line);
 }
 
-.grid-hint {
-  padding: 0 var(--space-4) var(--space-3);
+.grid-legend__chip--0 {
+  background: var(--heat-0);
+}
+.grid-legend__chip--1 {
+  background: var(--heat-1);
+}
+.grid-legend__chip--2 {
+  background: var(--heat-2);
+}
+.grid-legend__chip--3 {
+  background: var(--heat-3);
+}
+.grid-legend__chip--4 {
+  background: var(--heat-4);
+}
+.grid-legend__chip--5 {
+  background: var(--heat-5);
+}
+
+.grid-legend__mine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.grid-legend__mine::before {
+  content: '';
+  width: 1.25rem;
+  height: 0.75rem;
+  border-radius: var(--radius-xs);
+  border: 2px solid var(--accent);
+  background: var(--heat-2);
+}
+
+/*
+ * Keyboard instructions get a place rather than a paragraph.
+ *
+ * They are essential to the people who need them and noise to everyone else, and as prose in
+ * small grey text below the legend they reached neither group.
+ */
+.keyboard-help {
+  margin-left: auto;
   font-size: var(--text-sm);
-  color: var(--ink-faint);
+}
+
+.keyboard-help__summary {
+  cursor: pointer;
+  color: var(--accent-strong);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-sm);
+}
+
+.keyboard-help__list {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
+  color: var(--ink-soft);
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 1px var(--space-1);
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-align: center;
+  color: var(--ink);
 }
 
 /* ------------------------------------------------------------------ presence */
@@ -854,8 +1424,8 @@ a.button:hover {
 
 .panel__title {
   font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--ink-faint);
 }
@@ -886,8 +1456,26 @@ a.button:hover {
   background: var(--accent-soft);
 }
 
+/* One recommendation with runners-up, said out loud rather than implied by a tint. */
+.window-card__rank {
+  justify-self: start;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
 .window-card__when {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+}
+
+.button--small {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .window-card__who {
@@ -921,6 +1509,16 @@ a.button:hover {
   flex: none;
 }
 
+/* Dimmed *and* labelled — a faded dot on its own does not say "not here right now". */
+.participant__dot--away {
+  opacity: 0.35;
+}
+
+.participant__away {
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+}
+
 .participant__name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -949,13 +1547,25 @@ a.button:hover {
   border-radius: var(--radius-lg);
   background: var(--accent-soft);
   border: 1px solid var(--accent);
-  grid-column: 1 / -1;
+  /* The end of the flow gets a moment. Once, on arrival — it never loops. */
+  animation: rise var(--motion-settle) var(--ease-enter) both;
+}
+
+.finalized__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .finalized__label {
   font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--accent-strong);
 }
@@ -963,7 +1573,8 @@ a.button:hover {
 .finalized__when {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
 }
 
 .finalized__actions {
@@ -1010,10 +1621,25 @@ a.button:hover {
   }
 }
 
+.dialog__eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-1);
+}
+
+/* A long room name clamps rather than pushing the field and the button off a short screen. */
 .dialog__title {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
   letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .dialog__body {
@@ -1051,19 +1677,99 @@ a.button:hover {
 
 /* ------------------------------------------------------------------ misc */
 
-.centered-message {
+/* ---------------------------------------------------------------- status screens */
+
+/*
+ * Loading, gone, unreachable, mistyped — one shape for all of them, so the states nobody plans
+ * for get the same care as the ones everybody does.
+ */
+.status-screen {
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: var(--space-6);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
 }
 
-.centered-message__inner {
+.status-screen__inner {
   display: grid;
   gap: var(--space-4);
   justify-items: center;
-  max-width: 32rem;
+  max-width: 34rem;
+  animation: rise var(--motion-settle) var(--ease-enter) both;
+}
+
+.status-screen__mark {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  background: var(--danger-soft);
+  color: var(--danger);
+  margin-top: var(--space-2);
+}
+
+.status-screen__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.status-screen__body {
+  color: var(--ink-soft);
+  max-width: 44ch;
+}
+
+.status-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* ---------------------------------------------------------------- skeleton shapes */
+
+.skeleton--title {
+  width: min(18rem, 60vw);
+  height: 1.75rem;
+}
+
+.skeleton--zone {
+  width: min(12rem, 45vw);
+  height: 0.875rem;
+}
+
+.skeleton--pill {
+  width: 7rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+}
+
+.skeleton--label {
+  width: 7rem;
+  height: 0.875rem;
+}
+
+.skeleton--card {
+  width: 100%;
+  height: 5rem;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--cell {
+  height: 1.5rem;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+  padding: var(--space-4);
+  max-width: 34rem;
+  margin-inline: auto;
+  width: 100%;
 }
 
 .skip-link {

@@ -2,6 +2,7 @@ import { LEVEL, hueForParticipant, type Participant, type Presence } from '@over
 import type { RoomState } from '@overlap/room-core';
 import type { Slot } from '@overlap/time';
 import { useMemo } from 'react';
+import { formatMarkedTime } from '../lib/duration.js';
 import { participantColour } from '../lib/palette.js';
 import { usePrefersDark } from '../lib/usePrefersDark.js';
 
@@ -11,10 +12,11 @@ export interface ParticipantListProps {
   readonly state: RoomState;
   readonly slots: readonly Slot[];
   readonly participantId: string;
+  readonly slotMinutes: number;
 }
 
 export function ParticipantList(props: ParticipantListProps): React.JSX.Element {
-  const { participants, peers, state, slots, participantId } = props;
+  const { participants, peers, state, slots, participantId, slotMinutes } = props;
   const dark = usePrefersDark();
 
   const onlineIds = useMemo(() => new Set(peers.map((peer) => peer.participantId)), [peers]);
@@ -53,23 +55,23 @@ export function ParticipantList(props: ParticipantListProps): React.JSX.Element 
                 className={`participant${isMe ? ' participant--me' : ''}`}
               >
                 <span
-                  className="participant__dot"
+                  className={`participant__dot${online ? '' : ' participant__dot--away'}`}
                   style={{
                     background: participantColour(
                       hueForParticipant(participant.participantId),
                       dark,
                     ),
-                    // Dimmed rather than hidden: someone who painted last night and closed the
-                    // tab is still part of the room, just not here right now.
-                    opacity: online ? 1 : 0.35,
                   }}
                 />
                 <span className="participant__name">
                   {participant.name}
                   {isMe && ' (you)'}
+                  {/* Presence is dimmed *and* stated. Someone who painted last night and closed
+                      the tab is still part of the room, and a faded dot alone does not say so. */}
+                  {!online && <span className="participant__away"> · away</span>}
                 </span>
-                <span className="participant__meta">
-                  {count === 0 ? 'nothing yet' : `${String(count)} slot${count === 1 ? '' : 's'}`}
+                <span className="participant__meta tabular">
+                  {formatMarkedTime(count, slotMinutes)}
                 </span>
               </li>
             );

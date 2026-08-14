@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { roomIdFromLocation } from './lib/api.js';
+import { routeFromLocation, type Route } from './lib/api.js';
 import { Landing } from './components/Landing.js';
+import { BrokenLink } from './components/BrokenLink.js';
 import { RoomView } from './components/RoomView.js';
 
 /**
@@ -9,13 +10,17 @@ import { RoomView } from './components/RoomView.js';
  * There are exactly two views and one parameter, so a router would be more configuration than
  * code. The Worker serves `index.html` for any unmatched path, which is what makes a hard
  * refresh of `/r/:roomId` work.
+ *
+ * The third case is not a view so much as an answer: a room id that fails validation is a link
+ * that got cut short somewhere, and saying so is the difference between the user re-copying it
+ * and the user quietly starting a second room.
  */
 export function App(): React.JSX.Element {
-  const [roomId, setRoomId] = useState<string | null>(() => roomIdFromLocation());
+  const [route, setRoute] = useState<Route>(() => routeFromLocation());
 
   useEffect(() => {
     const onPopState = (): void => {
-      setRoomId(roomIdFromLocation());
+      setRoute(routeFromLocation());
     };
     window.addEventListener('popstate', onPopState);
     return () => {
@@ -23,5 +28,12 @@ export function App(): React.JSX.Element {
     };
   }, []);
 
-  return roomId === null ? <Landing /> : <RoomView roomId={roomId} key={roomId} />;
+  switch (route.kind) {
+    case 'room':
+      return <RoomView roomId={route.roomId} key={route.roomId} />;
+    case 'brokenLink':
+      return <BrokenLink />;
+    case 'landing':
+      return <Landing />;
+  }
 }
