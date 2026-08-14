@@ -131,10 +131,10 @@ values marked *changed* are amendments with a stated reason.
 | `--scrim` | `rgb(74 38 20 / 44%)` | **changed** | Was `rgb(24 19 16 / 45%)`, which composites over paper to a flat `#959188` — a dead grey that erased the palette behind every dialog (audit V1). Tinted toward clay so the world behind a modal stays warm. |
 | `--disabled-surface` | `#efe7dc` | **new** | A control that is waiting, not broken. Replaces `opacity: 0.5` (audit V4). |
 | `--disabled-ink` | `#9a8e81` | **new** | 4.6:1 on `--disabled-surface`. |
-| `--daylight-night` | `#b9b2bd` | **new** | Signature rail, 22:00–04:00. |
-| `--daylight-dawn` | `#f4cda2` | **new** | ~06:00. |
-| `--daylight-noon` | `#fff6e0` | **new** | ~12:00. |
-| `--daylight-dusk` | `#d9aa9b` | **new** | ~19:00. |
+| `--daylight-night` | `#a7a0b4` | **amended** | Signature rail, 20:00–05:00. |
+| `--daylight-dawn` | `#f3bd83` | **amended** | 05:00–08:00. |
+| `--daylight-noon` | `#ffdf9e` | **amended** | 08:00–17:00. Was `#fff6e0`, which is a near-white cream: on the white grid panel the rail vanished entirely for any room inside working hours — which is most rooms. The signature element cannot only appear for rooms that run overnight. |
+| `--daylight-dusk` | `#d59583` | **amended** | 17:00–20:00. |
 
 ### 3.2 Colour — dark
 
