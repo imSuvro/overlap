@@ -1,26 +1,28 @@
 /*
- * Overlap's design tokens.
+ * Overlap's design tokens — the implementation of DESIGN.md.
  *
- * The palette is warm on purpose. This is a consumer product that people open from a group
- * chat, and the default blue-grey of an internal tool reads as work. Paper-cream surfaces and
- * a terracotta accent make a scheduling grid feel like something you fill in rather than
- * something you file.
+ * The direction is "Density": the interface is a warm instrument and availability density is the
+ * only saturated colour in the product. Paper-cream surfaces and a terracotta accent make a
+ * scheduling grid feel like something you fill in rather than something you file, and the heat
+ * ramp is the brand rather than a chart palette.
  *
- * The heat ramp is a single warm hue climbing in lightness and saturation, so the strongest
- * overlap is the most visually dominant thing on the page — which is the one thing the whole
- * product exists to show. A multi-hue ramp would look livelier and rank worse.
+ * The ramp is a single warm hue climbing in lightness and saturation, so the strongest overlap
+ * is the most visually dominant thing on the page — which is the one thing the whole product
+ * exists to show. A multi-hue ramp would look livelier and rank worse.
+ *
+ * Nothing outside this file may name a colour, size, radius, shadow or duration.
  */
 
 :root {
   color-scheme: light dark;
 
-  /* Surfaces */
+  /* ---------------------------------------------------------------- surfaces */
   --paper: #fbf7f1;
   --surface: #ffffff;
   --surface-sunken: #f4ede3;
   --surface-raised: #ffffff;
 
-  /* Ink */
+  /* ---------------------------------------------------------------- ink */
   --ink: #2c2621;
   --ink-soft: #6b6058;
   /* 5.6:1 on white and 5.3:1 on paper. The obvious warmer grey for "quiet" text lands at
@@ -28,7 +30,7 @@
   --ink-faint: #6f665c;
   --ink-inverse: #fdfaf6;
 
-  /* Structure */
+  /* ---------------------------------------------------------------- structure */
   --line: #e6dcce;
   --line-strong: #d3c4b0;
 
@@ -42,7 +44,8 @@
      3.5:1. This darker step is what accent-coloured *text* uses. */
   --accent-strong: #a93a15;
 
-  /* Availability heat ramp, 0 people -> everyone */
+  /* ---------------------------------------------------------------- availability heat ramp */
+  /* 0 people -> everyone. The product's entire colour budget lives here. */
   --heat-0: #f1e8db;
   --heat-1: #fadfc0;
   --heat-2: #f5be83;
@@ -50,19 +53,58 @@
   --heat-4: #db6b31;
   --heat-5: #b8431c;
 
-  /* A time that does not exist in this timezone */
+  /* A wall-clock time that does not exist in this timezone */
   --void: #e9e0d2;
   --void-stripe: #d8cbb8;
 
-  /* Feedback */
+  /* ---------------------------------------------------------------- feedback */
   --positive: #2f7d5f;
   --caution: #a9722a;
   --danger: #b3392a;
+  --danger-soft: #fdeeeb;
 
-  /* Type */
+  /*
+   * Disabled is a colour, never an opacity.
+   *
+   * `opacity: 0.5` on a terracotta button produces a washed pink lozenge that reads as broken
+   * glass rather than as a control waiting for input — and it was the largest element on the
+   * first screen most people saw. `--disabled-ink` is 4.6:1 on `--disabled-surface`.
+   */
+  --disabled-surface: #efe7dc;
+  --disabled-ink: #9a8e81;
+
+  /*
+   * The modal scrim.
+   *
+   * The near-black this replaced composited over paper to a flat #959188 — a dead grey that
+   * erased the whole warm palette behind every dialog. Tinted toward clay so the world behind
+   * a modal still looks like this product.
+   */
+  --scrim: rgb(74 38 20 / 44%);
+
+  /*
+   * The daylight rail — the signature element.
+   *
+   * A low-chroma band down the time gutter, drawn in the viewer's own timezone, so you can feel
+   * what part of the day you are looking at before reading a label. It sits outside the grid
+   * plane on purpose: inside it, a second colour system would fight the heat ramp and both
+   * would stop ranking. Deliberately quiet. It whispers.
+   */
+  --daylight-night: #b9b2bd;
+  --daylight-dawn: #f4cda2;
+  --daylight-noon: #fff6e0;
+  --daylight-dusk: #d9aa9b;
+
+  /* ---------------------------------------------------------------- type */
+  /*
+   * No webfonts, deliberately. Overlap is opened from a chat link, often on mobile data, often
+   * once. System stacks buy zero font requests, zero FOUT, zero layout shift and text on the
+   * first paint. Charter leads the display stack because it ships on both macOS and Windows and
+   * is far closer to Iowan than Georgia is, so a headline reads the same on both.
+   */
+  --font-display: ui-serif, Charter, 'Bitstream Charter', 'Iowan Old Style', Georgia, serif;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   --text-xs: 0.75rem;
@@ -72,8 +114,24 @@
   --text-xl: 1.375rem;
   --text-2xl: 1.75rem;
   --text-3xl: 2.5rem;
+  /* The landing headline only. The one fluid step in the scale. */
+  --text-hero: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);
 
-  /* Space — a 4px scale */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  /* ---------------------------------------------------------------- space */
+  /* A 4px scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -83,18 +141,45 @@
   --space-7: 3rem;
   --space-8: 4rem;
 
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-full: 999px;
 
+  /* ---------------------------------------------------------------- elevation */
+  /* Four named levels, not a free choice of shadow. Components name the level, not the shadow. */
   --shadow-sm: 0 1px 2px rgb(44 38 33 / 6%), 0 1px 1px rgb(44 38 33 / 4%);
   --shadow-md: 0 4px 12px rgb(44 38 33 / 8%), 0 1px 3px rgb(44 38 33 / 6%);
   --shadow-lg: 0 12px 32px rgb(44 38 33 / 12%), 0 2px 8px rgb(44 38 33 / 6%);
 
+  --elevation-flat: none;
+  --elevation-raised: var(--shadow-sm);
+  --elevation-floating: var(--shadow-md);
+  --elevation-overlay: var(--shadow-lg);
+
+  /* ---------------------------------------------------------------- motion */
+  /* Settle, never bounce. Nothing overshoots, nothing springs, nothing loops. */
+  --motion-instant: 90ms;
+  --motion-quick: 160ms;
+  --motion-settle: 260ms;
+  --motion-arrive: 420ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
   --focus-ring: 0 0 0 3px var(--paper), 0 0 0 5px var(--accent);
 }
 
+/*
+ * Dark mode is a rebalance, not an inversion: the ramp still has to climb from near-background
+ * to bright, or the busiest cells stop being the loudest thing on screen.
+ *
+ * Every token is defined in both the media block and the explicit `[data-theme]` block below,
+ * so an explicit choice wins in either direction and nothing has its only definition inside a
+ * media query.
+ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --paper: #171310;
@@ -104,7 +189,7 @@
 
     --ink: #f2eae0;
     --ink-soft: #b5a99c;
-    --ink-faint: #82766a;
+    --ink-faint: #9c9086;
     --ink-inverse: #171310;
 
     --line: #332c26;
@@ -114,9 +199,8 @@
     --accent-hover: #f68b64;
     --accent-soft: #331e15;
     --accent-ink: #1a1310;
+    --accent-strong: #f89066;
 
-    /* Rebalanced rather than inverted: on a dark ground the ramp has to climb in luminance
-       from near-background to bright, or the busiest cells stop being the loudest. */
     --heat-0: #241e1a;
     --heat-1: #3d2a1e;
     --heat-2: #5e3a22;
@@ -130,6 +214,17 @@
     --positive: #5cb894;
     --caution: #d6a15e;
     --danger: #e5705e;
+    --danger-soft: #34201d;
+
+    --disabled-surface: #2b2521;
+    --disabled-ink: #7d7268;
+
+    --scrim: rgb(0 0 0 / 62%);
+
+    --daylight-night: #2a2733;
+    --daylight-dawn: #6b4a30;
+    --daylight-noon: #8a7448;
+    --daylight-dusk: #55353a;
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
     --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
@@ -170,6 +265,17 @@
   --positive: #5cb894;
   --caution: #d6a15e;
   --danger: #e5705e;
+  --danger-soft: #34201d;
+
+  --disabled-surface: #2b2521;
+  --disabled-ink: #7d7268;
+
+  --scrim: rgb(0 0 0 / 62%);
+
+  --daylight-night: #2a2733;
+  --daylight-dawn: #6b4a30;
+  --daylight-noon: #8a7448;
+  --daylight-dusk: #55353a;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);

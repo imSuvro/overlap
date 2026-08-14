@@ -40,13 +40,19 @@ export function PresenceLayer({ peers, width, height }: PresenceLayerProps): Rea
               <path
                 d="M1 1.2 12.4 9.6 6.9 10.3 4.2 15.6z"
                 fill={colour}
-                stroke="#fff"
+                stroke="var(--surface)"
                 strokeWidth="1.2"
                 strokeLinejoin="round"
               />
             </svg>
+            {/*
+              The participant's colour rings the chip rather than filling it. Filling it meant
+              white text over a generated hue, and a hue is not a colour you can guarantee
+              contrast against — yellow at the same lightness as blue is four times brighter.
+              Ringing it keeps the identity signal and puts the label on a known surface.
+            */}
             {peer.name.length > 0 && (
-              <span className="presence-cursor__name" style={{ background: colour }}>
+              <span className="presence-cursor__name" style={{ borderColor: colour }}>
                 {peer.name}
               </span>
             )}
