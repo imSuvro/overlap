@@ -90,10 +90,10 @@
    * plane on purpose: inside it, a second colour system would fight the heat ramp and both
    * would stop ranking. Deliberately quiet. It whispers.
    */
-  --daylight-night: #b9b2bd;
-  --daylight-dawn: #f4cda2;
-  --daylight-noon: #fff6e0;
-  --daylight-dusk: #d9aa9b;
+  --daylight-night: #a7a0b4;
+  --daylight-dawn: #f3bd83;
+  --daylight-noon: #ffdf9e;
+  --daylight-dusk: #d59583;
 
   /* ---------------------------------------------------------------- type */
   /*
@@ -221,10 +221,10 @@
 
     --scrim: rgb(0 0 0 / 62%);
 
-    --daylight-night: #2a2733;
-    --daylight-dawn: #6b4a30;
-    --daylight-noon: #8a7448;
-    --daylight-dusk: #55353a;
+    --daylight-night: #353142;
+    --daylight-dawn: #7d5533;
+    --daylight-noon: #a68a4e;
+    --daylight-dusk: #663d42;
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
     --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
@@ -272,10 +272,10 @@
 
   --scrim: rgb(0 0 0 / 62%);
 
-  --daylight-night: #2a2733;
-  --daylight-dawn: #6b4a30;
-  --daylight-noon: #8a7448;
-  --daylight-dusk: #55353a;
+  --daylight-night: #353142;
+  --daylight-dawn: #7d5533;
+  --daylight-noon: #a68a4e;
+  --daylight-dusk: #663d42;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);

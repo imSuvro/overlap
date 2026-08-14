@@ -102,7 +102,7 @@ export default tseslint.config(
   // Tests may assert on values TypeScript cannot narrow, and may use non-null assertions
   // freely — the assertion is the point of the test.
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', 'e2e/**/*.ts'],
+    files: ['**/*.test.ts', '**/*.test.tsx', 'e2e/**/*.ts', 'design/**/*.ts'],
     languageOptions: { globals: { ...globals.node } },
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',

@@ -44,8 +44,10 @@ function watchConsole(page: Page, screen: string): void {
 async function shoot(page: Page, name: string): Promise<void> {
   for (const size of WIDTHS) {
     await page.setViewportSize({ width: size.width, height: size.height });
-    // Let the canvas reflow and any transition settle before the shutter.
-    await page.waitForTimeout(350);
+    // Long enough for the canvas to reflow *and* for every entrance animation to finish. The
+    // first pass used 350ms and photographed the hero's heat cells mid-fade, at opacity zero —
+    // which looked exactly like a component that had failed to render.
+    await page.waitForTimeout(1_200);
     await page.screenshot({
       path: join(SHOT_DIR, `${name}--${size.name}.png`),
       fullPage: true,
@@ -175,15 +177,15 @@ test('room that does not exist', async ({ page }) => {
   watchConsole(page, 'missing');
 
   await page.goto(`/r/${UNKNOWN_ROOM_ID}`);
-  await expect(page.getByText(/isn.t here|not found/i)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /gone|not found|isn.t here/i })).toBeVisible();
   await shoot(page, '07-room-missing');
 });
 
 test('a link that got mangled on the way', async ({ page }) => {
   watchConsole(page, 'malformed');
 
-  // A truncated or typo'd id fails `roomIdSchema`, so the router reports "no room" and the app
-  // renders the landing page — silently. Captured because the silence is the finding.
+  // A truncated or typo'd id fails `roomIdSchema`. This used to render the landing page in
+  // silence; it now says so, which is what this capture is here to keep honest.
   await page.goto('/r/nosuchroomatall');
   await page.waitForTimeout(600);
   await shoot(page, '09-link-malformed');
