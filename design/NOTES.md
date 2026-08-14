@@ -68,3 +68,44 @@ explicitly rather than leaving it looking forgotten.
 
 **Boldness budget spent in one place: the daylight rail.** Everything else is deliberately
 disciplined so it can be the thing people remember.
+
+---
+
+## P5 — QA
+
+**The flaky tests were not flaky.** Three E2E failures that came and went across runs all had
+one cause: blocks above the grid appearing or disappearing on events the *user had not caused*,
+shifting the grid by roughly two rows mid-drag. A drag then finished somewhere other than where
+it started, so the wrong cells were painted — which surfaced as "expected 4, received 6" and as
+a convergence test that never converged.
+
+Two offenders, both introduced by this pass:
+
+- The invitation panel sat above the grid and vanished the moment a second person joined.
+  Moved into the side rail, where it keeps its emphasis and cannot move the grid on either
+  layout.
+- The offline banner keyed on `status === 'offline'`. Status starts at `offline` before the
+  first connection, so it rendered on *every* room load and then removed itself — a layout shift
+  on load, in a goal whose rules forbid exactly that. Worse, a disconnected client flips to
+  `connecting` on each retry, so the banner blinked out and back on every backoff tick. Now
+  gated on `everConnected && status !== 'live'`.
+
+Guarded by `e2e/smoke.spec.ts` → "the grid does not move under the user", which joins a second
+person and asserts the grid's box is unchanged.
+
+**Presence names now come from the CRDT.** The server stamps a name onto a presence record when
+that person's first cursor arrives, so a cursor that beats its own owner's name op leaves an
+unlabelled arrow — and a rename never reaches anyone else at all. The replicated map is the
+authority on who is called what; presence only ever knew where they were pointing. Fixed in the
+client rather than the hub, which keeps the change inside the presentation layer.
+
+**Dead end: chasing this as a test-timing problem.** The first instinct was to raise timeouts.
+Attribution came from running the same spec against the pre-overhaul `apps/web` (`git checkout
+<base> -- apps/web`), which was 12/12 green — proving the regression was mine and not a
+pre-existing race. Worth repeating whenever "the tests are flaky" is the first theory.
+
+**One console entry survives, deliberately.** The not-found screen probes `GET /api/rooms/:id`
+and Chrome logs a resource-level error for the 404, which is the correct API answer to a room
+that is genuinely gone. The smoke spec classifies it separately and asserts *exactly one* — more
+would mean the client is retrying something it already has an answer about — rather than
+filtering it out silently.
