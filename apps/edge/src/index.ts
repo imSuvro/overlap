@@ -54,14 +54,22 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 async function createRoom(request: Request, env: Env): Promise<Response> {
-  const contentLength = Number(request.headers.get('content-length') ?? '0');
-  if (contentLength > MAX_BODY_BYTES) {
+  // Measured rather than trusted. A missing `content-length` reads as 0 and a malformed one as
+  // NaN, and neither is greater than the limit — so a header check alone lets an unbounded
+  // body straight through to the parser.
+  let raw: string;
+  try {
+    raw = await request.text();
+  } catch {
+    return json({ error: 'Could not read the request body' }, 400);
+  }
+  if (raw.length > MAX_BODY_BYTES) {
     return json({ error: 'Request body too large' }, 413);
   }
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
     return json({ error: 'Expected JSON' }, 400);
   }

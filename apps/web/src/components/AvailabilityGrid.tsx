@@ -49,11 +49,55 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
   const hoveredRef = useRef<CellAddress | null>(null);
   const frameRef = useRef<number | null>(null);
 
-  /** Cached per-cell scores, recomputed only when the CRDT actually changed. */
-  const scoresRef = useRef<{ version: number; scores: number[]; peak: number } | null>(null);
+  /**
+   * Cached per-cell scores.
+   *
+   * Keyed on everything the scores actually depend on, not just the CRDT version: a
+   * participant joining changes every score without touching the availability map, and a
+   * rebuilt grid changes the `metrics.rows` stride the flat index is computed from. Keying on
+   * the version alone would serve stale intensities — and, after a row-count change, read the
+   * wrong entries entirely.
+   */
+  const scoresRef = useRef<{
+    version: number;
+    grid: ViewerGrid;
+    metrics: GridMetrics;
+    participants: readonly string[];
+    scores: number[];
+    peak: number;
+  } | null>(null);
 
   const [availableWidth, setAvailableWidth] = useState(960);
-  const [focused, setFocused] = useState<CellAddress>({ column: 0, row: 0 });
+
+  const cellExists = useCallback(
+    (address: CellAddress): boolean => Boolean(grid.cells[address.column]?.[address.row]),
+    [grid],
+  );
+
+  /**
+   * The grid's single tab stop.
+   *
+   * It cannot simply be cell (0, 0): that slot may not exist in this viewer's zone — the edge
+   * of the daily window, or an hour erased by a DST transition — and a void cell renders
+   * `disabled`, which would make the whole grid unreachable by keyboard and the skip link a
+   * dead end.
+   */
+  const firstRealCell = useMemo((): CellAddress => {
+    for (let row = 0; row < grid.rows.length; row += 1) {
+      for (let column = 0; column < grid.columns.length; column += 1) {
+        if (grid.cells[column]?.[row]) return { column, row };
+      }
+    }
+    return { column: 0, row: 0 };
+  }, [grid]);
+
+  const [focused, setFocused] = useState<CellAddress>(firstRealCell);
+
+  // A rebuilt grid — a timezone change, or the room being loaded — can leave focus pointing at
+  // a cell that no longer exists.
+  useEffect(() => {
+    if (!cellExists(focused)) setFocused(firstRealCell);
+  }, [cellExists, focused, firstRealCell]);
 
   const participantIds = useMemo(
     () => participants.map((participant) => participant.participantId),
@@ -117,7 +161,14 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
   const ensureScores = useCallback((): { scores: number[]; peak: number } => {
     const version = state.availability.version;
     const cached = scoresRef.current;
-    if (cached?.version === version) return cached;
+    if (
+      cached?.version === version &&
+      cached.grid === grid &&
+      cached.metrics === metrics &&
+      cached.participants === participantIds
+    ) {
+      return cached;
+    }
 
     const scores = new Array<number>(metrics.columns * metrics.rows).fill(0);
     let peak = 0;
@@ -134,7 +185,7 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
       }
     }
 
-    const computed = { version, scores, peak };
+    const computed = { version, grid, metrics, participants: participantIds, scores, peak };
     scoresRef.current = computed;
     return computed;
   }, [state, metrics, grid, participantIds]);
@@ -362,20 +413,32 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLElement>, address: CellAddress): void => {
       const move = (columnDelta: number, rowDelta: number): void => {
-        const next: CellAddress = {
-          column: clamp(address.column + columnDelta, 0, metrics.columns - 1),
-          row: clamp(address.row + rowDelta, 0, metrics.rows - 1),
-        };
         event.preventDefault();
 
+        // Step past any void cells in the direction of travel, rather than stopping dead on
+        // one. Arrowing across a DST gap should feel like arrowing across anything else.
+        let next = address;
+        for (
+          let column = address.column + columnDelta, row = address.row + rowDelta;
+          column >= 0 && column < metrics.columns && row >= 0 && row < metrics.rows;
+          column += columnDelta, row += rowDelta
+        ) {
+          if (cellExists({ column, row })) {
+            next = { column, row };
+            break;
+          }
+          if (columnDelta === 0 && rowDelta === 0) break;
+        }
+        if (next === address) return;
+
         // Shift extends a painted selection, mirroring what a drag does with a pointer, so the
-        // keyboard path is a peer of the mouse path rather than a reduced version of it.
+        // keyboard path is a peer of the mouse path rather than a reduced version of it —
+        // including the toggle, so a block can be cleared as well as painted.
         if (event.shiftKey) {
           const instant = instantAt(address);
-          const level =
-            instant !== null && state.levelFor(participantId, instant) === props.paintLevel
-              ? props.paintLevel
-              : props.paintLevel;
+          const current =
+            instant === null ? LEVEL.unavailable : state.levelFor(participantId, instant);
+          const level: Level = current === props.paintLevel ? LEVEL.unavailable : props.paintLevel;
           applyCells(cellsInRectangle(address, next), level);
         }
 
@@ -397,15 +460,20 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
           move(0, 1);
           break;
         case 'Home':
+        case 'End': {
           event.preventDefault();
-          setFocused({ column: 0, row: address.row });
-          focusCell({ column: 0, row: address.row });
+          // The first or last cell in this row that actually exists, so these keys cannot
+          // strand focus on a void slot either.
+          const columns = Array.from({ length: metrics.columns }, (_, column) => column);
+          const order = event.key === 'Home' ? columns : columns.reverse();
+          const column = order.find((candidate) =>
+            cellExists({ column: candidate, row: address.row }),
+          );
+          if (column === undefined) return;
+          setFocused({ column, row: address.row });
+          focusCell({ column, row: address.row });
           break;
-        case 'End':
-          event.preventDefault();
-          setFocused({ column: metrics.columns - 1, row: address.row });
-          focusCell({ column: metrics.columns - 1, row: address.row });
-          break;
+        }
         case ' ':
         case 'Enter': {
           event.preventDefault();
@@ -423,7 +491,7 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
           break;
       }
     },
-    [applyCells, instantAt, metrics, participantId, props, state],
+    [applyCells, cellExists, instantAt, metrics, participantId, props, state],
   );
 
   // --------------------------------------------------------------- render

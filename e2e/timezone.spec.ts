@@ -9,6 +9,10 @@ import { cellLabel, cells, createRoomViaApi, joinRoom, ordinaryRoom } from './he
  * offset is not a whole number of hours.
  */
 test.describe('the same room, seen from different timezones', () => {
+  // Stated explicitly rather than relying on the config default, because every assertion below
+  // is about what a viewer in *this* zone sees.
+  test.use({ timezoneId: 'America/New_York' });
+
   test('a New York viewer sees the hours the host chose', async ({ page, request }) => {
     const roomId = await createRoomViaApi(request, ordinaryRoom());
     await joinRoom(page, roomId, 'Priya');
@@ -87,6 +91,9 @@ test.describe('the same room, seen from different timezones', () => {
 });
 
 test.describe('daylight saving transitions', () => {
+  // The cell counts and the EDT/EST labels only hold for a viewer whose own clocks change.
+  test.use({ timezoneId: 'America/New_York' });
+
   test('the hour that happens twice appears twice, labelled apart', async ({ page, request }) => {
     // 2026-11-01 in New York: 01:00-02:00 happens once at -04:00 and again at -05:00. Both
     // are real, schedulable hours. Collapsing them would quietly delete an hour of
