@@ -587,7 +587,12 @@ export function AvailabilityGrid(props: AvailabilityGridProps): React.JSX.Elemen
           ))}
         </div>
 
-        <PresenceLayer peers={props.peers} width={metrics.width} height={metrics.height} />
+        <PresenceLayer
+          peers={props.peers}
+          participants={participants}
+          width={metrics.width}
+          height={metrics.height}
+        />
       </div>
     </div>
   );

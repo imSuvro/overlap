@@ -138,11 +138,25 @@ export function ConnectionBadge({
 export function OfflineNotice({
   status,
   pendingCount,
+  everConnected,
 }: {
   status: ConnectionStatus;
   pendingCount: number;
+  everConnected: boolean;
 }): React.JSX.Element | null {
-  if (status !== 'offline') return null;
+  /*
+   * Two conditions, and both exist to stop this block moving the grid underneath a drag.
+   *
+   * `everConnected` because status starts at `offline` — true, but not yet worth saying — so
+   * without it every room load rendered this banner and then removed it a few hundred
+   * milliseconds later, shifting the whole page on load.
+   *
+   * `!== 'live'` rather than `=== 'offline'` because a disconnected client flips to
+   * `connecting` on each retry. Keyed on `offline` alone the banner blinked out and back on
+   * every backoff tick, and a drag in progress landed on rows two positions from where it
+   * started.
+   */
+  if (!everConnected || status === 'live') return null;
 
   return (
     <div className="offline-notice" role="status">
