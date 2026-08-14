@@ -2,6 +2,8 @@ import { LwwMap, compareHlc, decodeHlc, encodeHlc, type Hlc } from '@overlap/crd
 import {
   LEVEL,
   SETTING_KEYS,
+  availabilityKey,
+  settingKeySchema,
   type Level,
   type Op,
   type Participant,
@@ -58,7 +60,9 @@ export class RoomState {
   }
 
   levelFor(participantId: string, instant: number): Level {
-    return this.availability.get(`${participantId}|${instant}`) ?? LEVEL.unavailable;
+    // Built with the protocol's own helper rather than an inline template, so a change to the
+    // key format cannot compile cleanly here and fail silently at runtime.
+    return this.availability.get(availabilityKey(participantId, instant)) ?? LEVEL.unavailable;
   }
 
   title(): string {
@@ -106,8 +110,10 @@ export class RoomState {
       }
     }
     for (const [key, register] of this.settings.entries()) {
-      if (newer(register.stamp) && (key === 'title' || key === 'finalizedInstant')) {
-        ops.push({ k: 's', key, v: register.value, s: encodeHlc(register.stamp) });
+      if (!newer(register.stamp)) continue;
+      const settingKey = settingKeySchema.safeParse(key);
+      if (settingKey.success) {
+        ops.push({ k: 's', key: settingKey.data, v: register.value, s: encodeHlc(register.stamp) });
       }
     }
 

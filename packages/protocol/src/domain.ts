@@ -33,15 +33,95 @@ export const sessionIdSchema = z
   .string()
   .refine((value) => isWellFormedId(value, SESSION_ID_LENGTH), 'Not a valid session id');
 
+/**
+ * A real day on the calendar, not merely something shaped like one.
+ *
+ * `2026-02-31` satisfies the pattern and every range check, then silently becomes 3 March when
+ * the date arithmetic normalises it — so a room would materialise slots on a day nobody asked
+ * for. Round-tripping through the date itself is the only check that catches it.
+ */
+function isRealCalendarDate(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const [, rawYear, rawMonth, rawDay] = match;
+  if (rawYear === undefined || rawMonth === undefined || rawDay === undefined) return false;
+
+  const year = Number.parseInt(rawYear, 10);
+  const month = Number.parseInt(rawMonth, 10);
+  const day = Number.parseInt(rawDay, 10);
+
+  const probe = new Date(0);
+  probe.setUTCFullYear(year, month - 1, day);
+  probe.setUTCHours(0, 0, 0, 0);
+
+  return (
+    probe.getUTCFullYear() === year &&
+    probe.getUTCMonth() === month - 1 &&
+    probe.getUTCDate() === day
+  );
+}
+
 export const localDateSchema = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Dates must be formatted YYYY-MM-DD');
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Dates must be formatted YYYY-MM-DD')
+  .refine(isRealCalendarDate, 'That date does not exist');
 
 export const timeZoneSchema = z
   .string()
   .refine(isValidTimeZone, 'Not a timezone this runtime recognises');
 
 export const slotMinutesSchema = z.union([z.literal(15), z.literal(30), z.literal(60)]);
+
+interface SchedulingShape {
+  readonly dates: readonly string[];
+  readonly dayStartMinute: number;
+  readonly dayEndMinute: number;
+  readonly slotMinutes: number;
+}
+
+/**
+ * The invariants that make a room's schedule coherent.
+ *
+ * Shared between the draft a host submits and the stored configuration, because the config is
+ * read back from durable storage and from `welcome` frames — both of which can carry something
+ * written by an older build or edited by hand. Validating only on the way in would leave the
+ * way out unguarded.
+ */
+function checkSchedule(shape: SchedulingShape, ctx: z.RefinementCtx): void {
+  if (shape.dayStartMinute >= shape.dayEndMinute) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'The day must start before it ends',
+      path: ['dayEndMinute'],
+    });
+  }
+  if ((shape.dayEndMinute - shape.dayStartMinute) % shape.slotMinutes !== 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'The chosen hours must divide evenly into slots',
+      path: ['slotMinutes'],
+    });
+  }
+  if (new Set(shape.dates).size !== shape.dates.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Dates must be distinct',
+      path: ['dates'],
+    });
+  }
+  // Without a ceiling, a crafted request could ask for a room with millions of slots and pin
+  // the Durable Object that owns it.
+  const slots =
+    (shape.dates.length * (shape.dayEndMinute - shape.dayStartMinute)) / shape.slotMinutes;
+  if (slots > MAX_ROOM_SLOTS) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'That is more slots than a room can hold',
+      path: ['dates'],
+    });
+  }
+}
 
 /** Everything a host chooses when creating a room. */
 export const roomDraftSchema = z
@@ -53,41 +133,21 @@ export const roomDraftSchema = z
     dayEndMinute: z.number().int().min(1).max(1_440),
     slotMinutes: slotMinutesSchema,
   })
-  .refine((draft) => draft.dayStartMinute < draft.dayEndMinute, {
-    message: 'The day must start before it ends',
-    path: ['dayEndMinute'],
-  })
-  .refine((draft) => (draft.dayEndMinute - draft.dayStartMinute) % draft.slotMinutes === 0, {
-    message: 'The chosen hours must divide evenly into slots',
-    path: ['slotMinutes'],
-  })
-  .refine(
-    (draft) =>
-      (draft.dates.length * (draft.dayEndMinute - draft.dayStartMinute)) / draft.slotMinutes <=
-      MAX_ROOM_SLOTS,
-    {
-      // Without a ceiling, a crafted request could ask for a room with millions of slots and
-      // pin the Durable Object that owns it.
-      message: 'That is more slots than a room can hold',
-      path: ['dates'],
-    },
-  )
-  .refine((draft) => new Set(draft.dates).size === draft.dates.length, {
-    message: 'Dates must be distinct',
-    path: ['dates'],
-  });
+  .superRefine(checkSchedule);
 
 export type RoomDraft = z.infer<typeof roomDraftSchema>;
 
-export const roomConfigSchema = z.object({
-  roomId: roomIdSchema,
-  anchorZone: timeZoneSchema,
-  dates: z.array(localDateSchema).min(1).max(MAX_ROOM_DATES),
-  dayStartMinute: z.number().int().min(0).max(1_439),
-  dayEndMinute: z.number().int().min(1).max(1_440),
-  slotMinutes: slotMinutesSchema,
-  createdAt: z.number().int().nonnegative(),
-});
+export const roomConfigSchema = z
+  .object({
+    roomId: roomIdSchema,
+    anchorZone: timeZoneSchema,
+    dates: z.array(localDateSchema).min(1).max(MAX_ROOM_DATES),
+    dayStartMinute: z.number().int().min(0).max(1_439),
+    dayEndMinute: z.number().int().min(1).max(1_440),
+    slotMinutes: slotMinutesSchema,
+    createdAt: z.number().int().nonnegative(),
+  })
+  .superRefine(checkSchedule);
 
 /**
  * The immutable half of a room.

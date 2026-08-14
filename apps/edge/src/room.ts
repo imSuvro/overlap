@@ -190,7 +190,18 @@ export class RoomDurableObject implements DurableObject {
       await this.ctx.storage.setAlarm(engine.lastWrittenAt + RETENTION_MS);
       return;
     }
+
     await this.ctx.storage.deleteAll();
+
+    // Clearing storage is not enough on its own: the in-memory engine and any hibernated
+    // sockets would survive, so a still-connected client's next op would apply to the stale
+    // engine and `persist` would write the room back with a fresh alarm — resurrecting a room
+    // that was just deleted. Dropping both is what makes the sweep final.
+    this.engine = null;
+    this.hub = null;
+    for (const socket of this.ctx.getWebSockets()) {
+      socket.close(1001, 'room expired');
+    }
   }
 }
 
