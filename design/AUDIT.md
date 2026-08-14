@@ -221,3 +221,121 @@ explainer cards that would carry the argument are *below* the form they're meant
 
 The room screen, by contrast, is close to passing already — the heatmap does explain itself.
 The product's best asset is hidden behind its worst screen.
+
+---
+
+# Phase 1 — Product framing
+
+## 9. Who this is for, and what it actually solves
+
+**Target user: the person who ended up organising something they didn't volunteer to organise.**
+
+They are not a scheduler power-user. They are the one in a group chat of six who said "I'll
+figure out a time", and now they have four replies saying "any time after 3 works for me" and
+two people in different countries. They are mildly annoyed, they are on their phone, and the
+task has already cost them more attention than it deserves.
+
+Three properties follow from that, and they set every design decision downstream:
+
+1. **They will not create an account, and neither will anyone they invite.** Any friction at the
+   door is not a conversion problem, it is a total failure — the group falls back to arguing in
+   the chat.
+2. **At least one participant is on a phone, in a different timezone, right now.** Timezone
+   correctness is not a feature, it is the difference between the tool working and the tool
+   producing a confidently wrong answer.
+3. **The organiser's real goal is to stop thinking about this.** Success is not "used the app".
+   Success is a time, agreed, and the tab closed.
+
+**The core problem:** finding an overlap in a group's availability is trivial arithmetic that
+becomes miserable the moment it happens over text, because nobody can hold six people's
+constraints in their head and nobody agrees what "3pm" means.
+
+**What Overlap does about it:** replaces the conversation with a shared surface. Everyone paints
+when they're free, in their own timezone, and the answer draws itself.
+
+## 10. The single primary action, per screen
+
+One per screen. If a screen has two, one of them is wrong.
+
+| Screen | Primary action | Everything else is subordinate to it |
+|---|---|---|
+| Landing | **Create the room** | The explainer, the calendar, the hour pickers all exist to make this button pressable with confidence. |
+| Name prompt | **Enter your name and continue** | There is nothing else on this screen. It should take three seconds. |
+| Room — you are alone | **Share the link** | An empty room is not a scheduling problem yet. It is an invitation problem. Painting your own availability into a room nobody else can see achieves nothing. |
+| Room — others are here | **Paint your availability** | The grid is the screen. Best times, participants, the title are all commentary on it. |
+| Room — enough people have painted | **Pin a time** | This is the exit. The product's job is finished the moment this is pressed. |
+| Room not found | **Start a new room** | The only useful thing left to do. |
+
+Note the room has three primary actions across its life — *share*, *paint*, *pin* — and today it
+presents all three with roughly equal weight at all times. Making the room's emphasis follow its
+state is the single largest UX change in this pass.
+
+## 11. Emotional target
+
+**Calm, capable, quietly delighted.** Concretely, and in the negative — the current app breaks
+each of these somewhere:
+
+| Feeling | What produces it | Where the app currently fails it |
+|---|---|---|
+| **Calm** | Warm surfaces, generous space, nothing flashing, nothing red unless something is genuinely wrong | The dead-grey modal scrim (V1); solid alarm-red date selection (V9); disabled CTAs that read as broken (V4) |
+| **Capable** | Knowing what to do without reading; the app confirming that what you did worked | The empty room explains nothing (F1); instructions are a paragraph at the bottom (F5); creating a room is never confirmed (F3) |
+| **Quietly delighted** | The overlap *appearing* as people paint; a pinned time feeling like a small win | The heatmap already does this well. Nothing marks the pin as an ending. |
+| **Never tense** | No dead ends, no silence after an action, no unexplained failure | A mangled link silently becomes a new room (F2); the not-found screen retries a socket forever (§4) |
+
+The one word to design against is **tense**. This is a chore the user is trying to finish. Every
+moment of "wait, did that work?" is the failure mode.
+
+## 12. UX fixes
+
+### Implementing in this pass — not flow-critical
+
+| # | Fix | Addresses |
+|---|---|---|
+| U1 | Lead the landing page with the heatmap itself, above the fold, so the product demonstrates rather than describes. Move the setup form below it. | 3s test, F3 |
+| U2 | Give the empty room a real empty state: the grid invites the first drag, in place, instead of a grey sentence underneath it. | F1 |
+| U3 | Make the room's emphasis follow its state — share when alone, paint when others are here, pin when there is an overlap worth taking. | §10 |
+| U4 | Replace the instruction paragraph with an affordance at the point of use, and keep the keyboard instructions available without making everyone read them. | F5 |
+| U5 | Name the top best-time card as the recommendation; demote the runners-up to secondary actions. | F6 |
+| U6 | Make the room title look editable — and, when it is edited, say so. | F7 |
+| U7 | Count in hours, not slots. | F8 |
+| U8 | Give the offline state room to speak, and say plainly that nothing is lost. | F9 |
+| U9 | On mobile, the room name outranks the wordmark. | F10 |
+| U10 | Design the loading state as a skeleton of the grid that is coming, so nothing jumps. | F4 |
+| U11 | Stop retrying the socket once the API has said the room does not exist. | §4 |
+
+### Implementing, and flagged because it changes what a URL does
+
+| # | Fix | Why it is not being held back |
+|---|---|---|
+| U12 | A malformed `/r/:id` shows "this link looks incomplete" instead of silently rendering the landing page. | The current behaviour is not a designed flow; it is `roomIdFromLocation` returning `null` and the router having no third case. A user who follows a truncated link today believes they are in their group's room and starts building a second one. Restoring an explanation completes the flow rather than changing it. Called out here because it does alter what a given URL renders. |
+
+### PENDING — flow changes, surfaced and awaiting a decision
+
+Neither is implemented in this pass.
+
+**P-1 — A dedicated share step after room creation.**
+Today, *Create the room* hard-navigates into the room and the very next thing is a modal asking
+for a name. The host never gets a moment that says "here is your link, send it to people", which
+is the entire reason they made a room.
+
+- *Option A (implemented instead, as U3):* keep the flow identical, but make the in-room share
+  affordance dominant while the host is alone. No new screen, no new step.
+- *Option B (pending):* insert a real share interstitial between creation and the room. Stronger
+  moment, but it adds a screen to the critical path and delays first paint of the grid.
+- *Option C (pending):* skip the name prompt for the host — they typed the room title, so ask
+  for their name inline in the room instead of gating on it.
+
+Option A is shipping because it delivers most of the benefit without touching the flow. B and C
+need approval.
+
+**P-2 — Letting people see a room before naming themselves.**
+The name prompt is currently a hard gate: the grid is not visible until you have typed a name.
+
+- *Argument for the gate (kept):* every mark on the grid belongs to a named person, presence is
+  meaningful, and the participant list is never full of anonymous entries. It also keeps the
+  identity model — `participantId` is minted alongside the name — simple.
+- *Argument against:* an invitee arriving from a chat link has to commit before they can see
+  whether the room is even the right one.
+
+Kept as-is for this pass. Changing it touches the identity model in `useRoom`/`RoomClient`, not
+just the presentation layer, which puts it outside this goal's scope without approval.
