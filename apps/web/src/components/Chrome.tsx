@@ -8,13 +8,7 @@ import { useEffect, useState } from 'react';
  * and advance width in every font a device might fall back through, so a button label would
  * shift depending on which one won. These inherit `currentColor` and one size.
  */
-function Icon({
-  path,
-  label,
-}: {
-  path: string;
-  label?: string;
-}): React.JSX.Element {
+function Icon({ path, label }: { path: string; label?: string }): React.JSX.Element {
   return (
     <svg
       className="icon"
@@ -38,7 +32,8 @@ const PATHS = {
   chevronRight: 'M7.5 4.5 13 10l-5.5 5.5',
   check: 'M4 10.5 8 14.5 16 5.5',
   link: 'M8.5 11.5a3.5 3.5 0 0 0 5 0l2.5-2.5a3.5 3.5 0 0 0-5-5l-1 1M11.5 8.5a3.5 3.5 0 0 0-5 0L4 11a3.5 3.5 0 0 0 5 5l1-1',
-  alert: 'M10 6.5v4.5M10 14h.01M8.6 3.2 2.3 14a1.6 1.6 0 0 0 1.4 2.4h12.6a1.6 1.6 0 0 0 1.4-2.4L11.4 3.2a1.6 1.6 0 0 0-2.8 0Z',
+  alert:
+    'M10 6.5v4.5M10 14h.01M8.6 3.2 2.3 14a1.6 1.6 0 0 0 1.4 2.4h12.6a1.6 1.6 0 0 0 1.4-2.4L11.4 3.2a1.6 1.6 0 0 0-2.8 0Z',
   pin: 'M7 3h6M10 3v6M5.5 9h9l1 3.5h-11ZM10 12.5V17',
 } as const;
 

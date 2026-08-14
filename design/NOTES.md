@@ -19,15 +19,15 @@ writing PNGs no gate reads.
 **Dead end: `/r/nosuchroomatall` does not reach the not-found screen.** First attempt at
 capturing the missing-room state failed. Root cause is not the test — `roomIdFromLocation`
 rejects ids that fail `roomIdSchema` (22 base58 chars) and returns `null`, so `App` renders the
-landing page instead. Kept *both* captures: `07` uses a well-formed unknown id
+landing page instead. Kept _both_ captures: `07` uses a well-formed unknown id
 (`z` × 22) for the real not-found screen, `09` uses the malformed one because the silence is
 itself the finding (friction F2).
 
 **Existing design system: extend, do not replace.**
 `tokens.css` is deliberate work, not scaffold — documented rationale, a purpose-built heat ramp,
 two contrast fixes with the failing ratios recorded in comments, dark mode, reduced motion.
-Its problem is coverage, not taste. Migration approach: keep every existing token *name and
-value* that survives review, add the missing layers (elevation, motion, type scale, state
+Its problem is coverage, not taste. Migration approach: keep every existing token _name and
+value_ that survives review, add the missing layers (elevation, motion, type scale, state
 patterns, component contract), and record any changed value as an explicit amendment rather
 than a silent overwrite. Brand assets found and honoured: the two-square wordmark
 (`Chrome.tsx:7`) and the matching favicon (`index.html`).
@@ -54,7 +54,7 @@ appear live under your cursor.
 **Rejected "Daylight" as a whole, promoted one part.** Washing the grid in a diurnal gradient
 directly breaks the documented reason the heat ramp exists — one hue climbing in lightness so
 the busiest cell dominates. Two colour systems in one plane cancel each other. The idea survives
-*beside* the grid: a low-chroma daylight rail down the time gutter, which is now the signature
+_beside_ the grid: a low-chroma daylight rail down the time gutter, which is now the signature
 element. It sits outside the grid plane so it cannot compete, and it makes the per-viewer
 timezone promise visible instead of merely claimed.
 
@@ -74,7 +74,7 @@ disciplined so it can be the thing people remember.
 ## P5 — QA
 
 **The flaky tests were not flaky.** Three E2E failures that came and went across runs all had
-one cause: blocks above the grid appearing or disappearing on events the *user had not caused*,
+one cause: blocks above the grid appearing or disappearing on events the _user had not caused_,
 shifting the grid by roughly two rows mid-drag. A drag then finished somewhere other than where
 it started, so the wrong cells were painted — which surfaced as "expected 4, received 6" and as
 a convergence test that never converged.
@@ -85,7 +85,7 @@ Two offenders, both introduced by this pass:
   Moved into the side rail, where it keeps its emphasis and cannot move the grid on either
   layout.
 - The offline banner keyed on `status === 'offline'`. Status starts at `offline` before the
-  first connection, so it rendered on *every* room load and then removed itself — a layout shift
+  first connection, so it rendered on _every_ room load and then removed itself — a layout shift
   on load, in a goal whose rules forbid exactly that. Worse, a disconnected client flips to
   `connecting` on each retry, so the banner blinked out and back on every backoff tick. Now
   gated on `everConnected && status !== 'live'`.
@@ -106,6 +106,6 @@ pre-existing race. Worth repeating whenever "the tests are flaky" is the first t
 
 **One console entry survives, deliberately.** The not-found screen probes `GET /api/rooms/:id`
 and Chrome logs a resource-level error for the 404, which is the correct API answer to a room
-that is genuinely gone. The smoke spec classifies it separately and asserts *exactly one* — more
+that is genuinely gone. The smoke spec classifies it separately and asserts _exactly one_ — more
 would mean the client is retrying something it already has an answer about — rather than
 filtering it out silently.

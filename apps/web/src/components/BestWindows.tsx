@@ -61,8 +61,8 @@ export function BestWindows(props: BestWindowsProps): React.JSX.Element {
 
       {windows.length === 0 ? (
         <p className="panel__empty">
-          Nothing lines up yet. As people mark when they&rsquo;re free, the times that suit
-          everyone appear here.
+          Nothing lines up yet. As people mark when they&rsquo;re free, the times that suit everyone
+          appear here.
         </p>
       ) : (
         <ol className="window-list">
