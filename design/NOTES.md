@@ -109,3 +109,40 @@ and Chrome logs a resource-level error for the 404, which is the correct API ans
 that is genuinely gone. The smoke spec classifies it separately and asserts _exactly one_ — more
 would mean the client is retrying something it already has an answer about — rather than
 filtering it out silently.
+
+---
+
+## Pre-merge review
+
+An adversarial multi-agent review of the whole diff raised 15 findings; 9 survived two
+independent verifiers and 6 were dismissed. Every survivor is now fixed and guarded by a test in
+`e2e/regressions.spec.ts`, named after the failure rather than the fix.
+
+**The blocker was a fix that created a worse bug.** Centring the grid with
+`justify-content: center` solved the 44% of empty panel from audit finding V3, and introduced a
+classic flexbox trap: a flex item centred inside a scroll container overflows _both_ ways, and
+the start-side overflow cannot be scrolled to. A 31-day room lost its time gutter and the
+daylight rail off the left edge permanently. `margin-inline: auto` centres when the content fits
+and resolves to zero when it does not, which is the whole difference.
+
+**The most valuable finding was not in the diff at all.** `identity.name` is one global
+localStorage value, and it satisfied the join gate — skipping the name dialog for anyone who had
+used the product before — while `setName` was only ever called _from_ that dialog. So from a
+returning visitor's second room onwards, no name register was written and they were absent from
+`RoomState.participants()`: missing from the participant list, from best-times scoring, from the
+heat fill and from the "N other people free" labels, while their own marks still drew back to
+them as outlines. Pre-existing, invisible to the whole suite because every E2E test starts from a
+fresh browser profile and joins through the dialog. This pass made it _visible_ — the new
+invitation card never cleared — which is how it was found.
+
+**Dismissed, and worth recording so they are not re-raised:** the discarded `title` from the
+probe response (the dialog reads title from the CRDT, which falls back correctly); `disabled` on
+the next-month button blurring focus (browsers move focus to the parent, not to the document);
+"· away" clipping inside an ellipsised span (the rail is wide enough at every breakpoint);
+adjacent duplicate `.grid-stage` blocks (real, harmless, now merged anyway); unused
+`.empty-state` rules and inert `aria-invalid` styling (both implement the locked component
+contract ahead of a consumer, which DESIGN.md §4 requires).
+
+**Method note.** Each finding was judged by two agents with opposite instructions — one told to
+refute it, one told to trace it from a user action — and kept only if both failed to dismiss it.
+That is what separated the nine real defects from six confident-sounding false positives.
