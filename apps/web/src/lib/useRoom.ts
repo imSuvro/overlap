@@ -225,7 +225,18 @@ export function useRoom(roomId: string): RoomSession {
         void fetchRoom(roomId).then(
           (found) => {
             if (isDisposed()) return;
-            if (found) setConfig(found.config);
+            if (found) {
+              setConfig(found.config);
+              return;
+            }
+            /*
+             * A definite 404 against a room we are rendering from cache. The room was swept, so
+             * nothing in the outbox can ever be delivered and every further socket attempt is
+             * wasted. Acting on this is the entire reason the confirmation exists — dropping the
+             * null left a dead room looking alive for as long as the tab stayed open.
+             */
+            setMissing(true);
+            roomClient.stop();
           },
           () => {
             // Offline with a cache is the case this whole design exists to serve. Nothing to do.
@@ -279,6 +290,31 @@ export function useRoom(roomId: string): RoomSession {
     };
   }, [client]);
 
+  /*
+   * Recover from an unreachable boot without being asked.
+   *
+   * When the very first probe fails there is no client yet, so the reconnection loop above has
+   * nothing to wake — the screen would sit on "we can't reach this room" until the button was
+   * pressed, where previously the room appeared on its own once the signal came back. Someone
+   * who opened the link in a tunnel puts the phone away and takes it out again; it should be
+   * loaded.
+   */
+  useEffect(() => {
+    if (!unreachable) return;
+    const onOnline = (): void => {
+      retry();
+    };
+    const onVisible = (): void => {
+      if (document.visibilityState === 'visible' && navigator.onLine) retry();
+    };
+    window.addEventListener('online', onOnline);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [unreachable, retry]);
+
   const slots = useMemo(() => (config ? materializeSlots(config).slots : []), [config]);
 
   /**
@@ -299,6 +335,38 @@ export function useRoom(roomId: string): RoomSession {
       finalizedInstant: client.state.finalizedInstant(),
     });
   }, [client, commitVersion]);
+
+  /*
+   * A remembered name has to actually join the room, not merely satisfy the prompt.
+   *
+   * `identity.name` is one global value, not per room. The join gate reads it and skips the
+   * dialog for anyone who has used the product before — but `setName` is only ever called from
+   * that dialog, so from a returning visitor's *second* room onwards no name register was ever
+   * written. They are then absent from `RoomState.participants()`, which is what the
+   * participant list, the best-times scoring, the heat fill and the "N other people free"
+   * labels all enumerate. Their marks were stored and drawn back to them as outlines while
+   * being invisible to the room's own arithmetic — including to everybody else.
+   *
+   * Writing the register once on arrival restores the invariant the name gate exists to
+   * guarantee: every mark on the grid belongs to a named person.
+   */
+  const autoJoinedRef = useRef(false);
+
+  useEffect(() => {
+    if (!client || autoJoinedRef.current) return;
+
+    const remembered = identity.name.trim();
+    if (remembered.length === 0) return;
+
+    const alreadyRegistered = derived.participants.some(
+      (participant) => participant.participantId === identity.participantId,
+    );
+    autoJoinedRef.current = true;
+    if (alreadyRegistered) return;
+
+    client.setName(remembered);
+    setCommitVersion((version) => version + 1);
+  }, [client, derived.participants, identity.name, identity.participantId]);
 
   const myName = useMemo(
     () => derived.participants.find((p) => p.participantId === identity.participantId)?.name ?? '',

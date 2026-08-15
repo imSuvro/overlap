@@ -68,10 +68,15 @@
    *
    * `opacity: 0.5` on a terracotta button produces a washed pink lozenge that reads as broken
    * glass rather than as a control waiting for input — and it was the largest element on the
-   * first screen most people saw. `--disabled-ink` is 4.6:1 on `--disabled-surface`.
+   * first screen most people saw.
+   *
+   * The ink is measured, not guessed: #6f665c on #efe7dc is 4.59:1. The lighter grey this
+   * started as looked more convincingly "off" and came in at 2.61:1, which is unreadable on the
+   * disabled submit button a first-time visitor stares at before they have typed anything.
+   * WCAG exempts disabled controls; being legible is still the point.
    */
   --disabled-surface: #efe7dc;
-  --disabled-ink: #9a8e81;
+  --disabled-ink: #6f665c;
 
   /*
    * The modal scrim.
@@ -216,8 +221,9 @@
     --danger: #e5705e;
     --danger-soft: #34201d;
 
+    /* 4.85:1 on --disabled-surface. */
     --disabled-surface: #2b2521;
-    --disabled-ink: #7d7268;
+    --disabled-ink: #9c9086;
 
     --scrim: rgb(0 0 0 / 62%);
 
@@ -267,8 +273,9 @@
   --danger: #e5705e;
   --danger-soft: #34201d;
 
+  /* 4.85:1 on --disabled-surface. */
   --disabled-surface: #2b2521;
-  --disabled-ink: #7d7268;
+  --disabled-ink: #9c9086;
 
   --scrim: rgb(0 0 0 / 62%);
 
