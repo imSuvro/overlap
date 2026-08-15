@@ -95,6 +95,11 @@ a.button:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* Delays too, not just durations. Zeroing duration alone still let the hero's forty heat
+       cells pop in one at a time down a diagonal over ~300ms, which is the flicker this
+       setting exists to prevent. */
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }
@@ -959,7 +964,17 @@ a.button:hover {
 
 /* ---------------------------------------------------------------- offline */
 
+/*
+ * Fixed, never in flow. See RoomView for why: a banner that appears when the network drops must
+ * not occupy layout above a grid somebody is mid-drag on.
+ */
 .offline-notice {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  translate: -50% 0;
+  z-index: 70;
+  width: min(32rem, calc(100vw - var(--space-6)));
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
@@ -967,6 +982,13 @@ a.button:hover {
   border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--caution);
+  box-shadow: var(--elevation-floating);
+  animation: toast-in var(--motion-settle) var(--ease-enter) both;
+}
+
+/* Stacked, so a rejected-write toast never lands on top of the offline banner. */
+.offline-notice ~ .toast {
+  bottom: calc(var(--space-5) + 6.5rem);
 }
 
 .offline-notice__mark {
@@ -1141,6 +1163,17 @@ a.button:hover {
   box-shadow: var(--elevation-raised);
 }
 
+/*
+ * The pressed state carries a box-shadow, and the global `:focus-visible` rule is a bare
+ * pseudo-class — so on the *selected* toggle the elevation outranked the focus ring on
+ * specificity and a keyboard user landed on it with nothing on screen changing at all. This
+ * matches the pressed selector's specificity, so focus wins wherever it lands.
+ */
+.paint-modes__option:focus-visible,
+.paint-modes__option[aria-pressed='true']:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
 .paint-modes__swatch {
   width: 0.75rem;
   height: 0.75rem;
@@ -1161,21 +1194,23 @@ a.button:hover {
  * The grid is capped at a readable column width, so on a wide screen it does not fill the
  * panel. Centring it is the fix: left-aligned, it left 44% of the card empty and read as a
  * layout that had failed rather than a grid that had finished.
+ *
+ * Centred with an auto inline margin rather than `justify-content: center` on a flex parent.
+ * A flex item centred inside a scroll container overflows *both* ways and the start-side
+ * overflow cannot be scrolled to — so a 31-day room lost its time gutter and daylight rail off
+ * the left edge with no way to reach them. Over-constrained auto margins resolve to zero, so
+ * this centres when the grid fits and falls back to flush-left, fully scrollable, when it does
+ * not.
  */
 .grid-scroll {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   padding: var(--space-4);
-  display: flex;
-  justify-content: center;
-}
-
-.grid-stage {
-  flex: none;
 }
 
 .grid-stage {
   position: relative;
+  margin-inline: auto;
   /* Touch drag must paint, not scroll the page. Horizontal panning stays available so a wide
      room is still reachable on a phone. */
   touch-action: pan-x;
