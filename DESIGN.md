@@ -130,7 +130,7 @@ values marked _changed_ are amendments with a stated reason.
 | `--danger`                 | `#b3392a`             | kept        |                                                                                                                                                                                                                                             |
 | `--scrim`                  | `rgb(74 38 20 / 44%)` | **changed** | Was `rgb(24 19 16 / 45%)`, which composites over paper to a flat `#959188` — a dead grey that erased the palette behind every dialog (audit V1). Tinted toward clay so the world behind a modal stays warm.                                 |
 | `--disabled-surface`       | `#efe7dc`             | **new**     | A control that is waiting, not broken. Replaces `opacity: 0.5` (audit V4).                                                                                                                                                                  |
-| `--disabled-ink`           | `#9a8e81`             | **new**     | 4.6:1 on `--disabled-surface`.                                                                                                                                                                                                              |
+| `--disabled-ink`           | `#6f665c`             | **amended** | 4.59:1 on `--disabled-surface`, measured. Was `#9a8e81`, whose note claimed 4.6:1 and is actually **2.61:1** — unreadable on the disabled submit button a first-time visitor looks at before typing anything.                               |
 | `--daylight-night`         | `#a7a0b4`             | **amended** | Signature rail, 20:00–05:00.                                                                                                                                                                                                                |
 | `--daylight-dawn`          | `#f3bd83`             | **amended** | 05:00–08:00.                                                                                                                                                                                                                                |
 | `--daylight-noon`          | `#ffdf9e`             | **amended** | 08:00–17:00. Was `#fff6e0`, which is a near-white cream: on the white grid panel the rail vanished entirely for any room inside working hours — which is most rooms. The signature element cannot only appear for rooms that run overnight. |
@@ -149,7 +149,7 @@ in kind:
 | `--accent` / `--accent-hover` / `--accent-soft` / `--accent-ink` / `--accent-strong` | `#f0784e` / `#f68b64` / `#331e15` / `#1a1310` / `#f89066` | kept    |
 | `--heat-0` … `--heat-5`                                                              | `#241e1a` → `#ee8b45`                                     | kept    |
 | `--scrim`                                                                            | `rgb(0 0 0 / 62%)`                                        | **new** |
-| `--disabled-surface` / `--disabled-ink`                                              | `#2b2521` / `#7d7268`                                     | **new** |
+| `--disabled-surface` / `--disabled-ink`                                              | `#2b2521` / `#9c9086`                                     | **new** |
 | `--daylight-night` / `--dawn` / `--noon` / `--dusk`                                  | `#2a2733` / `#6b4a30` / `#8a7448` / `#55353a`             | **new** |
 
 Both a `prefers-color-scheme` block and a `[data-theme='dark']` block define every one, so an
@@ -224,7 +224,9 @@ Elevation is four named levels, not a free choice of shadow:
 
 No spring, no overshoot, no `infinite` outside a loading indicator. Every one of these is
 neutralised under `prefers-reduced-motion: reduce`, which must remain a single global block —
-never a per-component afterthought.
+never a per-component afterthought. That block zeroes **delays as well as durations**: zeroing
+duration alone still lets a staggered sequence pop in element by element, which is exactly the
+flicker the setting exists to prevent.
 
 ---
 
