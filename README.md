@@ -7,16 +7,13 @@ their own timezone — and the overlap appears as you go. No accounts, no instal
 
 > Recorded against the live deployment, not a mock-up. Three real browser sessions, one room.
 
-### ▶︎ [overlap.gigantic-broom.workers.dev](https://overlap.gigantic-broom.workers.dev)
+### ▶︎ [overlap.weekendbuild.workers.dev](https://overlap.weekendbuild.workers.dev)
 
 Open it, make a room, and send the URL to someone. That's the whole product.
 
-> **This link is a Cloudflare _preview_ deploy and it expires.** It was published without an
-> account — `wrangler deploy --temporary` — so there is nothing keeping it alive. If it is dead
-> by the time you read this, `pnpm install && wrangler login && pnpm deploy` puts the identical
-> build on a permanent `workers.dev` subdomain in about a minute. Nothing else changes: the
-> whole E2E suite passes against the deployed origin either way, and `pnpm dev` runs the same
-> product locally with no account at all.
+> Running on Cloudflare's free tier — Workers for the app and API, one Durable Object per room
+> for the WebSocket and its storage. No account needed to use it, and none to run it: `pnpm dev`
+> gives you the same product locally against a Node WebSocket server.
 
 ---
 
@@ -179,7 +176,7 @@ Node, and the integration suite proves it.
 ```bash
 pnpm verify     # lint, typecheck, test, build — what CI runs
 pnpm test:e2e   # Playwright, desktop + Pixel 5
-OVERLAP_BASE_URL=https://overlap.gigantic-broom.workers.dev pnpm test:e2e   # against production
+OVERLAP_BASE_URL=https://overlap.weekendbuild.workers.dev pnpm test:e2e   # against production
 ```
 
 What is actually asserted, rather than assumed:
@@ -208,32 +205,27 @@ WCAG contrast failures, and offline marks that persisted but were never replayed
 
 Honest ones, not a shrug:
 
-1. **The deployed URL is a temporary Cloudflare preview, and it does expire.** It was published
-   without an account, so nothing keeps it alive — the first one lasted a few hours. Every
-   deploy is verified by running the whole E2E suite against the live origin (31/31), so the
-   build is known good; it is the _hosting_ that is ephemeral. `wrangler login && pnpm deploy`
-   puts the identical artifact on a permanent subdomain.
-2. **The same person on two devices is two participants.** Phone and laptop each get their own
+1. **The same person on two devices is two participants.** Phone and laptop each get their own
    `participantId`. Resuming identity across devices without accounts needs either a secret in
    the URL — one paste away from handing someone else your identity — or name-matching, which
    lets anyone impersonate anyone. Neither is worth it. [ADR-0007](docs/adr/0007-identity-without-accounts.md)
-3. **Anyone with the link can edit the room title and pin a time.** There are no roles, because
+2. **Anyone with the link can edit the room title and pin a time.** There are no roles, because
    there are no accounts to hang them on.
-4. **The full snapshot is sent on connect**, not a delta. A scalar cursor is unsafe when peers'
+3. **The full snapshot is sent on connect**, not a delta. A scalar cursor is unsafe when peers'
    clocks differ, and a correct delta needs a version vector. Fine at realistic room sizes
    (~100 KB); wasteful at the 2,000-slot ceiling.
-5. **No WebSocket fallback.** A small number of corporate proxies block them outright, and there
+4. **No WebSocket fallback.** A small number of corporate proxies block them outright, and there
    is no long-polling path.
-6. **Rooms are swept 60 days after their last write.** A deliberate retention policy, stated
+5. **Rooms are swept 60 days after their last write.** A deliberate retention policy, stated
    rather than implied.
-7. **Free-tier ceilings are per-account**: 100k requests/day, ~3M row-writes/month.
-8. **A device whose clock is more than five minutes off has its writes rejected** by the server.
+6. **Free-tier ceilings are per-account**: 100k requests/day, ~3M row-writes/month.
+7. **A device whose clock is more than five minutes off has its writes rejected** by the server.
    That is the correct trade against one bad clock winning every conflict forever, but it is a
    hard failure rather than a graceful one.
-9. **~92 KB gzipped**, most of it React and Zod. Fine, but not the tiny bundle the
+8. **~92 KB gzipped**, most of it React and Zod. Fine, but not the tiny bundle the
    zero-dependency packages might suggest.
-10. **Cut deliberately**: recurring windows, duration constraints, calendar import, and a QR code
-    for sharing. Reasoning for each in [`docs/PLAN.md`](docs/PLAN.md).
+9. **Cut deliberately**: recurring windows, duration constraints, calendar import, and a QR code
+   for sharing. Reasoning for each in [`docs/PLAN.md`](docs/PLAN.md).
 
 ---
 
