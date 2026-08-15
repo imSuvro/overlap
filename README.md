@@ -240,7 +240,8 @@ Open two browser windows on the same room URL to see it sync.
 
 ```bash
 pnpm verify     # everything CI runs
-pnpm deploy     # Cloudflare — needs `wrangler login` first
+pnpm run deploy # Cloudflare — needs `wrangler login` first. `run` is required:
+                # bare `pnpm deploy` hits pnpm's own deploy command, not this script.
 ```
 
 ## Repository

@@ -18,7 +18,15 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  /*
+   * A deployed origin gets the same two workers CI uses, whether or not CI is running it.
+   *
+   * Locally the default is one worker per core, which against a real Worker over the internet
+   * is a load test rather than a verification: two specs failed on a ten-worker run and both
+   * passed alone and at two workers. The assertions are identical either way — only the number
+   * of browsers hitting one origin at once changes.
+   */
+  workers: process.env.CI || DEPLOYED ? 2 : undefined,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
 
   timeout: 45_000,
