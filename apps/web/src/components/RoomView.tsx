@@ -164,12 +164,6 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
       </header>
 
       <main className="room__body">
-        <OfflineNotice
-          status={room.status}
-          pendingCount={room.pendingCount}
-          everConnected={room.everConnected}
-        />
-
         {finalizedInstant !== null && (
           <div className="finalized">
             <span className="finalized__mark" aria-hidden="true">
@@ -328,6 +322,20 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
           />
         </aside>
       </main>
+
+      {/*
+        Outside `main`, and fixed rather than in flow.
+
+        Losing the network is a remote event. As a normal row above the grid this banner pushed
+        the grid down about 100px the instant the socket dropped, so a drag in progress finished
+        four rows from where it started. Nothing that appears on someone else's schedule may
+        occupy layout above the thing the user is currently dragging on.
+      */}
+      <OfflineNotice
+        status={room.status}
+        pendingCount={room.pendingCount}
+        everConnected={room.everConnected}
+      />
 
       {room.notice !== null && <Toast message={room.notice} onDismiss={room.dismissNotice} />}
     </div>
