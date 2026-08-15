@@ -1,6 +1,6 @@
 # Overlap — UI/UX overhaul report
 
-Branch `feature/ui-overhaul`, cut from `develop` at `ec59adf`. Ten commits, one per phase.
+Branch `feature/ui-overhaul`, cut from `develop` at `ec59adf`. Fourteen commits: one per phase, plus a design amendment, the formatting pass, and the fixes the pre-merge review turned up.
 
 The app's behaviour was already finished and tested. This pass changed how it looks, how it
 reads, and what it does when things go wrong — plus four defects that only became visible once
@@ -207,26 +207,32 @@ filtered away silently. Removing it altogether means changing the API to answer 
 
 ---
 
-## 6. PENDING — awaiting a decision
+## 6. The flow changes, decided
 
-Surfaced rather than guessed, per the brief. None is implemented.
+Surfaced rather than guessed, per the brief. Two are now settled by the repo owner; one remains
+open.
 
-**P-1 — A dedicated share step after room creation.** _Create the room_ still hard-navigates
-into the room, where the next thing is a modal asking for a name; the host never gets a moment
-that says "here is your link". This pass shipped the non-flow-changing half — the in-room
-invitation is dominant while you are alone. A real interstitial adds a screen to the critical
-path and delays first paint of the grid. Option C would skip the name prompt for the host, who
-has already typed the room title, and ask for their name inline instead.
+**P-1 — A dedicated share step after room creation. → Approved, shipped.**
+A screen now sits between creating a room and entering it: the room's name, the link in full and
+selectable, and one primary action — copy it. Continuing is the way out, and takes the emphasis
+once the link is copied. The signal is a `sessionStorage` key rather than a query parameter,
+because the address of a room is the thing being shared and `?created=1` would ride along into
+the group chat; that also scopes it to one tab, so an invitee following the link never sees it.
+Screenshots: [desktop](audit/after/11-room-created--desktop.png) ·
+[tablet](audit/after/11-room-created--tablet.png) ·
+[mobile](audit/after/11-room-created--mobile.png).
 
-**P-2 — Letting people see a room before naming themselves.** The name prompt is a hard gate.
-Keeping it means every mark belongs to a named person and the participant list is never full of
-anonymous entries; removing it means an invitee can check they have the right room before
-committing. Changing it touches the identity model in `useRoom`/`RoomClient`, not just
-presentation.
+**P-2 — Letting people see a room before naming themselves. → Declined; the gate stays.**
+Keeping it means every mark belongs to a named person. The pre-merge review sharpened the case:
+a _remembered_ name was already satisfying the gate without writing a name register into the
+room, leaving a participant invisible to the participant list, the best-times scoring and the
+heat fill while their own marks still drew back to them. The invariant was already broken in the
+one case nobody tested. Repairing it beat weakening it further. Option C — exempting the host
+from the prompt — falls with it, for the same reason.
 
-**P-3 — Answering "room not found" with `200 { found: false }`.** Would remove the last console
-entry on the not-found screen. It is an API contract change, and arguably a worse API: a 404 is
-the honest status code for a resource that is not there.
+**P-3 — Answering "room not found" with `200 { found: false }`. → Still open.** Would remove the
+last console entry on the not-found screen. It is an API contract change, and arguably a worse
+API: a 404 is the honest status code for a resource that is not there.
 
 ---
 

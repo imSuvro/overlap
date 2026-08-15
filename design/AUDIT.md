@@ -309,27 +309,31 @@ moment of "wait, did that work?" is the failure mode.
 | --- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | U12 | A malformed `/r/:id` shows "this link looks incomplete" instead of silently rendering the landing page. | The current behaviour is not a designed flow; it is `roomIdFromLocation` returning `null` and the router having no third case. A user who follows a truncated link today believes they are in their group's room and starts building a second one. Restoring an explanation completes the flow rather than changing it. Called out here because it does alter what a given URL renders. |
 
-### PENDING — flow changes, surfaced and awaiting a decision
+### Flow changes — surfaced, then decided by the owner
 
-Neither is implemented in this pass.
+Both were held back from the first pass and put to the repo owner. Both are now settled.
 
-**P-1 — A dedicated share step after room creation.**
-Today, _Create the room_ hard-navigates into the room and the very next thing is a modal asking
-for a name. The host never gets a moment that says "here is your link, send it to people", which
-is the entire reason they made a room.
+**P-1 — A dedicated share step after room creation. → Approved and shipped.**
+_Create the room_ used to hard-navigate into the room, where the very next thing was a modal
+asking for a name. The host never got a moment that said "here is your link", which is the
+entire reason they made a room.
 
-- _Option A (implemented instead, as U3):_ keep the flow identical, but make the in-room share
-  affordance dominant while the host is alone. No new screen, no new step.
-- _Option B (pending):_ insert a real share interstitial between creation and the room. Stronger
-  moment, but it adds a screen to the critical path and delays first paint of the grid.
-- _Option C (pending):_ skip the name prompt for the host — they typed the room title, so ask
-  for their name inline in the room instead of gating on it.
+- _Option A (shipped in the first pass, as U3):_ keep the flow identical, make the in-room share
+  affordance dominant while the host is alone.
+- _Option B — **chosen**:_ a real share screen between creation and the room. It shows the room's
+  name, the link in full and selectable, and one primary action: copy it. Continuing is the way
+  out. Emphasis swaps once the link is copied, because at that point the only thing left is to
+  go and mark your own availability.
+- _Option C (not taken):_ skipping the name prompt for the host. Rejected as a consequence of
+  P-2 below — the gate exists so that every mark belongs to a named person, and exempting the
+  host would be the first hole in it.
 
-Option A is shipping because it delivers most of the benefit without touching the flow. B and C
-need approval.
+Implementation note: the "you just made this" signal is a `sessionStorage` key, not a query
+parameter. The address of a room is the thing being shared, and `?created=1` would ride along
+into the group chat and be wrong for everyone who followed it. It is also therefore scoped to
+one tab, so an invitee opening the link never sees the screen — asserted in `e2e/room.spec.ts`.
 
-**P-2 — Letting people see a room before naming themselves.**
-The name prompt is currently a hard gate: the grid is not visible until you have typed a name.
+**P-2 — Letting people see a room before naming themselves. → Declined; the gate stays.**
 
 - _Argument for the gate (kept):_ every mark on the grid belongs to a named person, presence is
   meaningful, and the participant list is never full of anonymous entries. It also keeps the
@@ -337,5 +341,10 @@ The name prompt is currently a hard gate: the grid is not visible until you have
 - _Argument against:_ an invitee arriving from a chat link has to commit before they can see
   whether the room is even the right one.
 
-Kept as-is for this pass. Changing it touches the identity model in `useRoom`/`RoomClient`, not
-just the presentation layer, which puts it outside this goal's scope without approval.
+The pre-merge review made the case for keeping it sharper than the original argument did. It
+found that a _remembered_ name was already satisfying the gate without ever writing a name
+register into the room, and the result was a participant who was invisible to the participant
+list, the best-times scoring and the heat fill while their own marks still drew back to them.
+The invariant the gate exists to protect had been quietly broken in the one case nobody tested.
+Weakening the gate further, rather than repairing it, would have made that class of bug the
+normal case.

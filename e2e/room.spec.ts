@@ -11,7 +11,7 @@ import {
 } from './helpers.js';
 
 test.describe('creating and using a room', () => {
-  test('a host can create a room from the landing page and land in it', async ({ page }) => {
+  test('a host creates a room and is handed the link before anything else', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -23,7 +23,39 @@ test.describe('creating and using a room', () => {
 
     // The URL is the room.
     await expect(page).toHaveURL(/\/r\/[A-Za-z0-9]{22}$/);
+
+    /*
+     * The link comes before the name prompt. Creating a room used to navigate straight into it
+     * and immediately ask who you are, so the host never saw the thing they made the room to
+     * send.
+     */
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Dinner with friends');
+    const url = page.locator('#created-share-url');
+    await expect(url).toHaveValue(await page.evaluate(() => location.href));
+    await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible();
+    // Nothing is asked of the host on this screen.
+    await expect(page.locator('#participant-name')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Continue to the room' }).click();
     await expect(page.getByRole('dialog')).toContainText('Dinner with friends');
+  });
+
+  /*
+   * The share screen belongs to the person who made the room, and to nobody else. It is keyed
+   * to one tab by sessionStorage rather than to the URL, precisely so that the address the host
+   * pastes into a group chat opens the room itself.
+   */
+  test('an invitee following the link never sees the share step', async ({ browser, request }) => {
+    const roomId = await createRoomViaApi(request, ordinaryRoom({ title: 'Sprint planning' }));
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto(`/r/${roomId}`);
+
+    await expect(page.locator('#participant-name')).toBeVisible();
+    await expect(page.locator('#created-share-url')).toHaveCount(0);
+
+    await context.close();
   });
 
   test('a room survives a hard refresh of its URL', async ({ page, request }) => {
