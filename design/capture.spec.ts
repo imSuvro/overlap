@@ -129,6 +129,17 @@ test.beforeAll(async () => {
   await mkdir(SHOT_DIR, { recursive: true });
 });
 
+/** The screen a host now sees between making a room and entering it. */
+test('the share step, straight after creating a room', async ({ page }) => {
+  watchConsole(page, 'created');
+
+  await page.goto('/');
+  await page.locator('#room-title-input').fill('Design review with the whole team');
+  await page.getByRole('button', { name: 'Create the room' }).click();
+  await expect(page.locator('#created-share-url')).toBeVisible();
+  await shoot(page, '11-room-created');
+});
+
 test('landing, in every state', async ({ page }) => {
   watchConsole(page, 'landing');
 
