@@ -2,6 +2,7 @@ import { MAX_ROOM_DATES, MAX_TITLE_LENGTH, type RoomDraft } from '@overlap/proto
 import { addDays, localDateAt, localTimeZone, parseLocalDate, toLocalDate } from '@overlap/time';
 import { useMemo, useRef, useState } from 'react';
 import { createRoom, roomPath } from '../lib/api.js';
+import { rememberJustCreated } from '../lib/handoff.js';
 import { IconGlyph, Wordmark } from './Chrome.js';
 import { DemoGrid } from './DemoGrid.js';
 
@@ -117,6 +118,9 @@ export function Landing(): React.JSX.Element {
         slotMinutes,
       };
       const created = await createRoom(draft);
+      // Tells the room it was just made, so it can show the host the link before asking them
+      // for anything. Kept out of the URL: the address of a room is the thing being shared.
+      rememberJustCreated(created.config.roomId);
       // A full navigation rather than a history push: the room is a different application
       // shell, and this way a hard refresh of the resulting URL is exercised from the start.
       location.assign(roomPath(created.config.roomId));

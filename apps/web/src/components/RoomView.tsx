@@ -20,7 +20,9 @@ import {
   Toast,
   Wordmark,
 } from './Chrome.js';
+import { forgetJustCreated, wasJustCreated } from '../lib/handoff.js';
 import { NameDialog } from './NameDialog.js';
+import { RoomCreated } from './RoomCreated.js';
 import { ParticipantList } from './ParticipantList.js';
 import { RoomSkeleton } from './RoomSkeleton.js';
 
@@ -33,6 +35,9 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
   const room = useRoom(roomId);
   const [paintLevel, setPaintLevel] = useState<Level>(LEVEL.available);
   const [titleDraft, setTitleDraft] = useState<string | null>(null);
+  // Read once on mount. Reading it every render would make the screen reappear after the host
+  // has dismissed it, and clearing it on read would lose it across an accidental reload.
+  const [justCreated, setJustCreated] = useState(() => wasJustCreated(roomId));
 
   // The viewer's own zone, always. The room's anchor zone defines what the host's chosen hours
   // mean; it never decides how anyone else reads the grid.
@@ -97,6 +102,26 @@ export function RoomView({ roomId }: { roomId: string }): React.JSX.Element {
             Start a new room
           </a>
         }
+      />
+    );
+  }
+
+  /*
+   * The share step comes before the name prompt, not after.
+   *
+   * The host has just described what they are planning; asking them to identify themselves
+   * before they have been given the thing they came here to send is the wrong order, and it is
+   * why they never saw the link at all.
+   */
+  if (justCreated) {
+    return (
+      <RoomCreated
+        title={room.title}
+        shareUrl={`${location.origin}${roomPath(roomId)}`}
+        onContinue={() => {
+          forgetJustCreated();
+          setJustCreated(false);
+        }}
       />
     );
   }
