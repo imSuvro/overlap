@@ -26,7 +26,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     environment:
       name: production
-      url: ${{ vars.PRODUCTION_URL || 'https://overlap.gigantic-broom.workers.dev' }}
+      url: ${{ vars.PRODUCTION_URL || 'https://overlap.weekendbuild.workers.dev' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -47,4 +47,4 @@ jobs:
       - name: Verify the deployment
         run: pnpm exec playwright install --with-deps chromium && pnpm test:e2e
         env:
-          OVERLAP_BASE_URL: ${{ vars.PRODUCTION_URL || 'https://overlap.gigantic-broom.workers.dev' }}
+          OVERLAP_BASE_URL: ${{ vars.PRODUCTION_URL || 'https://overlap.weekendbuild.workers.dev' }}
